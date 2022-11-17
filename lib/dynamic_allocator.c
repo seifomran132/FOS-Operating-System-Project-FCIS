@@ -113,6 +113,7 @@ void insert_sorted_allocList(struct MemBlock* blockToInsert)
 	// Write your code here, remove the panic and write your code
 	//panic("insert_sorted_allocList() is not implemented yet...!!");
 
+
 	int AllocListSize = LIST_SIZE(&AllocMemBlocksList);
 
 	// Update lastAllocBlockSVA for NF
@@ -132,14 +133,14 @@ void insert_sorted_allocList(struct MemBlock* blockToInsert)
 
 			if (
 				LocatedElm->prev_next_info.le_next != NULL &&
-				LocatedElm->size + LocatedElm->sva < blockToInsert->sva &&
-				blockToInsert->size + blockToInsert->sva < LocatedElm->prev_next_info.le_next->sva
+				LocatedElm->sva < blockToInsert->sva &&
+				blockToInsert->sva < LocatedElm->prev_next_info.le_next->sva
 				) {
 				// insert between two blocks
 
 				LIST_INSERT_AFTER(&AllocMemBlocksList, LocatedElm, blockToInsert);
 			}
-			else if (LocatedElm->sva < blockToInsert->sva) {
+			else if (blockToInsert->sva > LIST_LAST(&AllocMemBlocksList)->sva) {
 
 				// Insert After in tail
 
@@ -150,6 +151,7 @@ void insert_sorted_allocList(struct MemBlock* blockToInsert)
 
 				LIST_INSERT_HEAD(&AllocMemBlocksList, blockToInsert);
 			}
+
 		}
 	}
 }
