@@ -154,13 +154,34 @@ int copy_paste_chunk(uint32* page_directory, uint32 source_va, uint32 dest_va, u
 			//int permsOfPage = pt_get_page_permissions(page_directory, srcAddressItr);
 
 			uint32 srcEntry = sourcePageTable[PTX(srcAddressItr)];
-			uint32 srcWithoutPerms = (srcEntry >> 12) << 12;
-			int destPerms = pt_get_page_permissions(page_directory, destAddressItr);
-			uint32 newDest = srcWithoutPerms | destPerms;
+			//uint32 srcWithoutPerms = (srcEntry >> 12) << 12;
+			//int destPerms = pt_get_page_permissions(page_directory, destAddressItr);
+			//uint32 newDest = srcWithoutPerms | destPerms;
 
-			destPageTable[PTX(destAddressItr)] = srcWithoutPerms | destPerms;
-			cprintf("Src Entry Without Prems %d \n", srcWithoutPerms);
-			cprintf("New Dest Entry %d \n", destPageTable[PTX(destAddressItr)]);
+			//destPageTable[PTX(destAddressItr)] = srcWithoutPerms | destPerms;
+			//cprintf("Src Entry Without Prems %d \n", srcWithoutPerms);
+			//cprintf("New Dest Entry %d \n", destPageTable[PTX(destAddressItr)]);
+
+
+
+			uint32 *ptrToPTDEST = NULL;
+			struct FrameInfo *destFrameInfo = get_frame_info(page_directory, destAddressItr, &ptrToPTDEST);
+
+			if(destFrameInfo != NULL) {
+				cprintf("Writing dest %d \n", destAddressItr);
+				destPageTable[PTX(destAddressItr)] = sourcePageTable[PTX(srcAddressItr)];
+			}
+			else {
+				cprintf("Dest Does not exist \n");
+				uint32 table_entry = sourcePageTable[PTX(srcAddressItr)];
+				int n = (((1 << 12) - 1) & table_entry);
+				//uint32 srcPerms = pt_get_page_permissions(page_directory, srcAddressItr);
+				uint32 *ptrToPT = NULL;
+				struct FrameInfo *myFrameInfo = get_frame_info(page_directory, srcAddressItr, &ptrToPT);
+				int mapres = map_frame(page_directory, myFrameInfo, destAddressItr, n);
+
+				cprintf("Map Result %d \n", mapres);
+			}
 
 
 			// Mapping dest to PA
@@ -283,7 +304,39 @@ void calculate_allocated_space(uint32* page_directory, uint32 sva, uint32 eva, u
 {
 	//TODO: [PROJECT MS2 - BONUS] [CHUNK OPERATIONS] calculate_allocated_space
 	// Write your code here, remove the panic and write your code
-	panic("calculate_allocated_space() is not implemented yet...!!");
+	//panic("calculate_allocated_space() is not implemented yet...!!");
+
+	uint32 NumOfTables = 0;
+	uint32 NumOfPages = 0;
+
+	// Round up and down the addresses
+	uint32 roundedBase = ROUNDDOWN(sva, PAGE_SIZE);
+	uint32 roundedEnd = ROUNDUP(eva, PAGE_SIZE);
+
+	uint32 iteratorAddress = roundedBase;
+
+	uint32* savedPagedTable = NULL;
+	while(iteratorAddress <= roundedEnd) {
+		uint32 *ourPageTable = NULL;
+		get_page_table(page_directory, iteratorAddress, &ourPageTable);
+
+		if(ourPageTable != NULL && savedPagedTable != ourPageTable) {
+			NumOfTables++;
+			savedPagedTable = ourPageTable;
+		}
+		if(ourPageTable != NULL) {
+
+			uint32 *ptrToFTable = NULL;
+			struct FrameInfo *frameToBeChecked = get_frame_info(page_directory, iteratorAddress, &ptrToFTable);
+			if(frameToBeChecked != 0) {
+				NumOfPages++;
+			}
+
+		}
+		iteratorAddress += PAGE_SIZE;
+	}
+	*num_pages = NumOfPages;
+	*num_tables = NumOfTables;
 }
 
 /*BONUS*/
@@ -298,7 +351,41 @@ uint32 calculate_required_frames(uint32* page_directory, uint32 sva, uint32 size
 {
 	//TODO: [PROJECT MS2 - BONUS] [CHUNK OPERATIONS] calculate_required_frames
 	// Write your code here, remove the panic and write your code
-	panic("calculate_required_frames() is not implemented yet...!!");
+	//panic("calculate_required_frames() is not implemented yet...!!");
+
+	uint32 totalNumOfPages = ROUNDUP(size, PAGE_SIZE) / PAGE_SIZE;
+	uint32 NumOfTables = 0;
+	uint32 NumOfPages = totalNumOfPages;
+
+	// Round up and down the addresses
+	uint32 roundedBase = ROUNDDOWN(sva, PAGE_SIZE);
+	//uint32 roundedEnd = ROUNDUP(eva, PAGE_SIZE);
+
+	uint32 iteratorAddress = roundedBase;
+	while (totalNumOfPages > 0) {
+		uint32 *ourPageTable = NULL;
+		get_page_table(page_directory, iteratorAddress, &ourPageTable);
+
+		if(ourPageTable == NULL) {
+			NumOfTables++;
+			totalNumOfPages--;
+		}
+		else {
+			uint32 *ptrToFTable = NULL;
+			struct FrameInfo *frameToBeChecked = get_frame_info(page_directory, iteratorAddress, &ptrToFTable);
+			if(frameToBeChecked != 0) {
+				iteratorAddress += PAGE_SIZE;
+				continue;
+			}
+			else {
+				totalNumOfPages--;
+			}
+		}
+
+	}
+
+	return NumOfPages + NumOfTables;
+
 }
 
 //=================================================================================//
