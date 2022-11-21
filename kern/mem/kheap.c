@@ -47,43 +47,29 @@ void initialize_dyn_block_system()
 #endif
 	//[3] Initialize AvailableMemBlocksList by filling it with the MemBlockNodes
 	initialize_MemBlocksList(MAX_MEM_BLOCK_CNT);
-
+	cprintf("MAX 1: %d \n", MAX_MEM_BLOCK_CNT);
 	//[4] Insert a new MemBlock with the remaining heap size into the FreeMemBlocksList
 	struct MemBlock* allocatedForFree = LIST_FIRST(&AvailableMemBlocksList);
 	LIST_REMOVE(&AvailableMemBlocksList, allocatedForFree);
-
+	cprintf("MAX 2: %d \n", MAX_MEM_BLOCK_CNT);
 	//The Block which will be inserted in Free list
 	uint32 restedSize = (KERNEL_HEAP_MAX - KERNEL_HEAP_START) - totalSizeRequired - sizeof(struct MemBlock);
 	allocatedForFree->size = restedSize;
 	allocatedForFree->sva = ROUNDUP(KERNEL_HEAP_START + totalSizeRequired, PAGE_SIZE);
 	insert_sorted_with_merge_freeList(allocatedForFree);
+	cprintf("MAX 3: %d \n", MAX_MEM_BLOCK_CNT);
 }
 void* kmalloc(unsigned int size)
 {
 	//TODO: [PROJECT MS2] [KERNEL HEAP] kmalloc
 	// your code is here, remove the panic and write your code
-	//kpanic_into_prompt("kmalloc() is not implemented yet...!!");
+	kpanic_into_prompt("kmalloc() is not implemented yet...!!");
 
 	//NOTE: All kernel heap allocations are multiples of PAGE_SIZE (4KB)
 	//refer to the project presentation and documentation for details
 	// use "isKHeapPlacementStrategyFIRSTFIT() ..." functions to check the current strategy
 
 	//change this "return" according to your answer
-
-	struct MemBlock* ptr = NULL;
-	void*ptrAllocation;
-	if(isKHeapPlacementStrategyFIRSTFIT())
-	{
-		//ptr=alloc_block_FF(size);
-		//allocation
-	}
-	if(isKHeapPlacementStrategyBESTFIT())
-	{
-		//ptr=alloc_block_BF(size);
-		//allocation
-	}
-
-	return ptr;
 }
 
 void kfree(void* virtual_address)
