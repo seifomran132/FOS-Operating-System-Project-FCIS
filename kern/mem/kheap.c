@@ -84,15 +84,19 @@ void initialize_dyn_block_system()
 }
 void* kmalloc(unsigned int size)
 {
-	//TODO: [PROJECT MS2] [KERNEL HEAP] kmalloc
-	// your code is here, remove the panic and write your code
-	kpanic_into_prompt("kmalloc() is not implemented yet...!!");
+	struct MemBlock* ptr;
+	void*ptrAllocation;
+	if(isKHeapPlacementStrategyFIRSTFIT())
+	{
+		ptr=alloc_block_FF(size);
+		//allocation
+	}
+	if(isKHeapPlacementStrategyBESTFIT())
+	{
+		ptr=alloc_block_BF(size);
+		//allocation
+	}
 
-	//NOTE: All kernel heap allocations are multiples of PAGE_SIZE (4KB)
-	//refer to the project presentation and documentation for details
-	// use "isKHeapPlacementStrategyFIRSTFIT() ..." functions to check the current strategy
-
-	//change this "return" according to your answer
 }
 
 void kfree(void* virtual_address)
