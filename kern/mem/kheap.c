@@ -14,9 +14,13 @@ void initialize_dyn_block_system()
 {
 	//TODO: [PROJECT MS2] [KERNEL HEAP] initialize_dyn_block_system
 	// your code is here, remove the panic and write your code
-	kpanic_into_prompt("initialize_dyn_block_system() is not implemented yet...!!");
+	//kpanic_into_prompt("initialize_dyn_block_system() is not implemented yet...!!");
 
 	//[1] Initialize two lists (AllocMemBlocksList & FreeMemBlocksList) [Hint: use LIST_INIT()]
+
+	LIST_INIT(&AllocMemBlocksList);
+	LIST_INIT(&FreeMemBlocksList);
+
 #if STATIC_MEMBLOCK_ALLOC
 	//DO NOTHING
 #else
@@ -26,9 +30,39 @@ void initialize_dyn_block_system()
 	 * 		2. allocation should be aligned on PAGE boundary
 	 * 	HINT: can use alloc_chunk(...) function
 	 */
+	uint32 numOfElements = ((KERNEL_HEAP_MAX - KERNEL_HEAP_START));
+	MAX_MEM_BLOCK_CNT = NUM_OF_KHEAP_PAGES;
+	allocate_chunk(ptr_page_directory, KERNEL_HEAP_START, MAX_MEM_BLOCK_CNT, (PERM_PRESENT | PERM_WRITEABLE));
+
+	MemBlockNodes = (struct MemBlock*)KERNEL_HEAP_START;
+
 #endif
 	//[3] Initialize AvailableMemBlocksList by filling it with the MemBlockNodes
+	cprintf("numOfElements %x \n", numOfElements);
+	cprintf("KERNEL_HEAP_MAX %x \n", KERNEL_HEAP_MAX);
+	cprintf("KERNEL_HEAP_START %x \n", KERNEL_HEAP_START);
+	cprintf("PAGE_SIZE %x \n", PAGE_SIZE);
+	cprintf("MAX_MEM_BLOCK_CNT: %d \n", MAX_MEM_BLOCK_CNT);
+
+	uint32 i;
+	for (i = 0; i < MAX_MEM_BLOCK_CNT; i++) {
+		MemBlockNodes[i].size = 0;
+		MemBlockNodes[i].sva = 0;
+		LIST_INSERT_TAIL(&AvailableMemBlocksList, &MemBlockNodes[i]);
+		cprintf("av %d \n", LIST_SIZE(&(AvailableMemBlocksList)));
+	}
+
+	cprintf("i %x \n", i);
+	//initialize_MemBlocksList(MAX_MEM_BLOCK_CNT);
+	//cprintf("av %d /n",LIST_SIZE(&(AvailableMemBlocksList)));
+
+
 	//[4] Insert a new MemBlock with the remaining heap size into the FreeMemBlocksList
+	struct MemBlock block;
+	block.sva = MAX_MEM_BLOCK_CNT - 1;
+	block.size = PAGE_SIZE;
+	insert_sorted_with_merge_freeList(&block);
+	cprintf("Test after insert \n");
 }
 
 void* kmalloc(unsigned int size)
