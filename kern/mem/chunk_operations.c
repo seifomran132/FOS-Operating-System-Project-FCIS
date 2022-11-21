@@ -92,125 +92,112 @@ int copy_paste_chunk(uint32* page_directory, uint32 source_va, uint32 dest_va, u
 	// Write your code here, remove the panic and write your code
 	//panic("copy_paste_chunk() is not implemented yet...!!");
 
-	uint32 roundedSize = ROUNDUP(size, PAGE_SIZE);
-	uint32 num_of_pages = roundedSize / PAGE_SIZE;
+	uint32 roundedSrcStart = ROUNDDOWN(source_va, PAGE_SIZE);
+	uint32 roundedSrcEnd = ROUNDUP(source_va + size, PAGE_SIZE);
+	uint32 roundedDestStart = ROUNDDOWN(dest_va, PAGE_SIZE);
+	uint32 roundedDestEnd = ROUNDUP(dest_va + size, PAGE_SIZE);
 
 	uint32 *sourcePageTable = NULL;
-	get_page_table(page_directory, source_va, &sourcePageTable);
+	get_page_table(page_directory, roundedSrcStart, &sourcePageTable);
 	uint32 *destPageTable = NULL;
-	get_page_table(page_directory, dest_va, &destPageTable);
+	get_page_table(page_directory, roundedDestStart, &destPageTable);
 
 	if(sourcePageTable != NULL) {
-		//Round Addresses
-		uint32 roundedAddress = ROUNDDOWN(source_va, PAGE_SIZE);
-		uint32 roundedDestAddress = ROUNDDOWN(dest_va, PAGE_SIZE);
 
-		cprintf("Source Rounded %d \n", roundedAddress);
-		cprintf("Dest %d \n", dest_va);
-		cprintf("Num of pages %d \n", num_of_pages);
-		cprintf("Size: %d \n", size);
-		// Save Addresses in variables to iterate
-		uint32 srcAddressItr = roundedAddress;
-		uint32 destAddressItr = roundedDestAddress;
 
-		// Flags
-		uint32 destExist = 0;
-
-		// Checking If Dest Address Exists
-		uint32 destAddressForChecking = roundedDestAddress;
-		for (int i = 0; i < num_of_pages; i++) {
-			uint32 *ptrToPTDEST = NULL;
-			struct FrameInfo *destFrameInfo = get_frame_info(page_directory, destAddressForChecking, &ptrToPTDEST);
+		// Check if destination exists with read only
+		uint32 checkerIt = roundedDestStart;
+		while(checkerIt < roundedDestEnd) {
+			uint32 *destTablePtr = NULL;
+			struct FrameInfo *destFrameInfo = get_frame_info(page_directory, checkerIt, &destTablePtr);
 			if(destFrameInfo != NULL) {
-				// Read The Full Address
-				//uint32 destEntry = destPageTable[PTX(destAddressForChecking)];
-				//cprintf("Destination %d \n", destEntry);
+				cprintf("Page Exists \n");
 
-				int destPerms = pt_get_page_permissions(page_directory, destAddressForChecking);
+				int destPerms = pt_get_page_permissions(page_directory, checkerIt);
 				int WritableFlag = destPerms & PERM_WRITEABLE;
-				//cprintf("Write Flag %d \n", WritableFlag);
-				//cprintf("Perms %d \n", destPerms);
 				if(WritableFlag != 2) {
 					//cprintf("Not Writable \n");
 					return -1;
 				}
 				else {
-					destExist = 1;
+					checkerIt += PAGE_SIZE;
 				}
-				destAddressForChecking += PAGE_SIZE;
-			} else {
-				destAddressForChecking += PAGE_SIZE;
-			}
 
+			} else {
+				checkerIt += PAGE_SIZE;
+			}
 		}
 
-		// Create Dest Page Table If Not Exist
 		if(destPageTable == NULL) {
-				create_page_table(page_directory, destAddressItr);
-			}
+			create_page_table(page_directory, dest_va);
+		}
 
-		for(int i = 0; i < num_of_pages; i++) {
+		// Save Addresses in variables to iterate
+		uint32 srcAddressItr = roundedSrcStart;
+		uint32 destAddressItr = roundedDestStart;
+		while(destAddressItr < roundedDestEnd) {
 
-			// Getting Permissions
-			//int permsOfPage = pt_get_page_permissions(page_directory, srcAddressItr);
+			uint32 *srcTablePtr = NULL;
+			struct FrameInfo *srcFrame = get_frame_info(page_directory, srcAddressItr, &srcTablePtr);
 
-			uint32 srcEntry = sourcePageTable[PTX(srcAddressItr)];
-			//uint32 srcWithoutPerms = (srcEntry >> 12) << 12;
-			//int destPerms = pt_get_page_permissions(page_directory, srcAddressItr);
-			//uint32 newDest = srcWithoutPerms | destPerms;
+			uint32 *destTablePtr = NULL;
+			struct FrameInfo *destFrame = get_frame_info(page_directory, destAddressItr, &destTablePtr);
 
-			//destPageTable[PTX(destAddressItr)] = srcWithoutPerms | destPerms;
-			//cprintf("Src Entry Without Prems %d \n", srcWithoutPerms);
-			//cprintf("New Dest Entry %d \n", destPageTable[PTX(destAddressItr)]);
+			if (destFrame != NULL) {
+
+				int srcPerms = pt_get_page_permissions(page_directory, srcAddressItr);
+				int mapres = map_frame(page_directory, destFrame, destAddressItr, srcPerms);
+				uint32 contIt = srcAddressItr;
+				uint32 destContIt = destAddressItr;
+				for(int i = 0; i < 4096; i++) {
+					unsigned char *destFrameContent = (unsigned char*)(destContIt);
+					unsigned char *srcFrameContent = (unsigned char*)(contIt);
+
+					if(*srcFrameContent == 0) {
+						//cprintf("I: %d, Src Frame Content: %c A: %d\n", destContIt-destAddressItr, *srcFrameContent, destContIt);
+						*destFrameContent = 0;
+					}
+						*destFrameContent = *srcFrameContent;
+
+					destContIt += 1;
+					contIt += 1;
+				}
+				//destTablePtr[PTX(destAddressItr)] = srcTablePtr[PTX(srcAddressItr)];
 
 
-
-			uint32 *ptrToPTDEST = NULL;
-			struct FrameInfo *destFrameInfo = get_frame_info(page_directory, destAddressItr, &ptrToPTDEST);
-
-			if(destFrameInfo != NULL) {
-				cprintf("Writing dest %d \n", destAddressItr);
-				destPageTable[PTX(destAddressItr)] = srcEntry;
-				cprintf("Src : %d \n", sourcePageTable[PTX(srcAddressItr)]);
-				cprintf("Dest after map: %d \n", ptrToPTDEST[PTX(destAddressItr)]);
+				//cprintf("Dest Frame Content: %c, Src Frame Content: %c \n", *destFrameContent, *srcFrameContent);
 			}
 			else {
-				cprintf("Dest Does not exist \n");
+				cprintf("Page Does Not Exist\n");
+				int ret = allocate_frame(&destFrame);
+				int srcPerms = pt_get_page_permissions(page_directory, srcAddressItr);
+				int userPerm = srcPerms | PERM_WRITEABLE;
 
-				uint32 srcPerms = pt_get_page_permissions(page_directory, srcAddressItr);
-				uint32 permUser = srcPerms | PERM_USER;
+//				uint32 physrc = virtual_to_physical(page_directory, srcAddressItr);
+//				unsigned char *content = (unsigned char*)srcAddressItr;
+//				cprintf("Content %c\n", &content);
+				int mapres = map_frame(page_directory, destFrame, destAddressItr, userPerm);
 
-				uint32 *ptrToPT = NULL;
-				struct FrameInfo *myFrameInfo = get_frame_info(page_directory, srcAddressItr, &ptrToPT);
-				int ret = allocate_frame(&destFrameInfo);
-//				destFrameInfo->environment = myFrameInfo->environment;
-//				destFrameInfo->isBuffered = myFrameInfo->isBuffered;
-//				destFrameInfo->references = myFrameInfo->references;
-//				destFrameInfo->va = myFrameInfo->va;
-//				destFrameInfo->prev_next_info = myFrameInfo->prev_next_info;
-
-				//destFrameInfo = myFrameInfo;
-				//memcpy(destFrameInfo, myFrameInfo, PAGE_SIZE);
-				ptrToPTDEST[PTX(destAddressItr)] = sourcePageTable[PTX(srcAddressItr)];
-				int mapres = map_frame(page_directory, destFrameInfo, destAddressItr, srcPerms);
-
-				cprintf("Src : %d \n", sourcePageTable[PTX(srcAddressItr)]);
-				cprintf("Dest after map: %d \n", ptrToPTDEST[PTX(destAddressItr)]);
-				cprintf("Map Result %d \n", mapres);
+				uint32 contIt = srcAddressItr;
+				uint32 destContIt = destAddressItr;
+				while(contIt < srcAddressItr + PAGE_SIZE) {
+					unsigned char *destFrameContent = (unsigned char*)(destContIt);
+					unsigned char *srcFrameContent = (unsigned char*)(contIt);
+					//cprintf("Src Frame Content: %c \n", *srcFrameContent);
+					*destFrameContent = *srcFrameContent;
+					destContIt += 1;
+					contIt += 1;
+				}
+				//*destFrameContent = *srcFrameContent;
+				//cprintf("Dest Frame Content: %c, Src Frame Content: %c \n", *destFrameContent, *srcFrameContent);
+				//memcpy(&destPA, &srcPA, PAGE_SIZE);
 			}
 
-
-			// Mapping dest to PA
-			//uint32 *ptrToPT = NULL;
-			//struct FrameInfo *myFrameInfo = get_frame_info(page_directory, srcAddressItr, &ptrToPT);
-			//int mapres = map_frame(page_directory, myFrameInfo, destAddressItr, permsOfPage);
-			// Unmap Source
-			//unmap_frame(page_directory, srcAddressItr);
-			// Increment Iterators
 			srcAddressItr += PAGE_SIZE;
 			destAddressItr += PAGE_SIZE;
-
 		}
+
+
 	}
 
 	return 0;
@@ -227,6 +214,58 @@ int share_chunk(uint32* page_directory, uint32 source_va,uint32 dest_va, uint32 
 	//TODO: [PROJECT MS2] [CHUNK OPERATIONS] share_chunk
 	// Write your code here, remove the panic and write your code
 	//panic("share_chunk() is not implemented yet...!!");
+
+	uint32 roundedSrcStart = ROUNDDOWN(source_va, PAGE_SIZE);
+	uint32 roundedSrcEnd = ROUNDUP(source_va + size, PAGE_SIZE);
+	uint32 roundedDestStart = ROUNDDOWN(dest_va, PAGE_SIZE);
+	uint32 roundedDestEnd = ROUNDUP(dest_va + size, PAGE_SIZE);
+
+	uint32 *sourcePageTable = NULL;
+	get_page_table(page_directory, roundedSrcStart, &sourcePageTable);
+	uint32 *destPageTable = NULL;
+	get_page_table(page_directory, roundedDestStart, &destPageTable);
+
+
+
+	if(sourcePageTable != NULL) {
+
+		// Check if destination exists
+		uint32 checkerIt = roundedDestStart;
+		while(checkerIt < roundedDestEnd) {
+			uint32 *destTablePtr = NULL;
+			struct FrameInfo *destFrameInfo = get_frame_info(page_directory, checkerIt, &destTablePtr);
+			if(destFrameInfo != NULL) {
+				cprintf("Page Exists \n");
+				return -1;
+			} else {
+				checkerIt += PAGE_SIZE;
+			}
+		}
+
+
+		// Create Dest Page Table If Not Exist
+		if(destPageTable == NULL) {
+			create_page_table(page_directory, roundedDestStart);
+		}
+
+		// Save Addresses in variables to iterate
+		uint32 srcAddressItr = roundedSrcStart;
+		uint32 destAddressItr = roundedDestStart;
+		while(destAddressItr < roundedDestEnd) {
+
+			uint32 *srcTablePtr = NULL;
+			struct FrameInfo *srcFrame = get_frame_info(page_directory, srcAddressItr, &srcTablePtr);
+
+			//uint32 *destTablePtr = NULL;
+			//struct FrameInfo *destFrame = get_frame_info(page_directory, destAddressItr, &destTablePtr);
+			//int ret = allocate_frame(&destFrame);
+
+			int mapres = map_frame(page_directory, srcFrame, destAddressItr, perms);
+
+			srcAddressItr += PAGE_SIZE;
+			destAddressItr += PAGE_SIZE;
+		}
+	}
 
 	return 0;
 }
@@ -338,36 +377,48 @@ uint32 calculate_required_frames(uint32* page_directory, uint32 sva, uint32 size
 
 	uint32 totalNumOfPages = ROUNDUP(size, PAGE_SIZE) / PAGE_SIZE;
 	uint32 NumOfTables = 0;
-	uint32 NumOfPages = totalNumOfPages;
+	uint32 NumOfPages = 0;
+	uint32 roundedEnd = ROUNDUP(sva+size, PAGE_SIZE);
 
 	// Round up and down the addresses
 	uint32 roundedBase = ROUNDDOWN(sva, PAGE_SIZE);
+
+	uint32 addrStart = roundedBase;
+	uint32 addrEnd = roundedEnd;
+	while (addrStart < addrEnd) {
+		uint32 *ourPageTable = NULL;
+		get_page_table(page_directory, addrStart, &ourPageTable);
+		if(ourPageTable == NULL) {
+			create_page_table(page_directory, roundedBase);
+			NumOfTables++;
+		}
+	}
 	//uint32 roundedEnd = ROUNDUP(eva, PAGE_SIZE);
 
-	uint32 iteratorAddress = roundedBase;
-	while (totalNumOfPages > 0) {
-		uint32 *ourPageTable = NULL;
-		get_page_table(page_directory, iteratorAddress, &ourPageTable);
+//	uint32 iteratorAddress = roundedBase;
+//	while (totalNumOfPages > 0) {
+//		uint32 *ourPageTable = NULL;
+//		get_page_table(page_directory, iteratorAddress, &ourPageTable);
+//
+//		if(ourPageTable == NULL) {
+//			NumOfTables++;
+//			totalNumOfPages--;
+//		}
+//		else {
+//			uint32 *ptrToFTable = NULL;
+//			struct FrameInfo *frameToBeChecked = get_frame_info(page_directory, iteratorAddress, &ptrToFTable);
+//			if(frameToBeChecked != 0) {
+//				iteratorAddress += PAGE_SIZE;
+//				continue;
+//			}
+//			else {
+//				totalNumOfPages--;
+//			}
+//		}
+//
+//	}
 
-		if(ourPageTable == NULL) {
-			NumOfTables++;
-			totalNumOfPages--;
-		}
-		else {
-			uint32 *ptrToFTable = NULL;
-			struct FrameInfo *frameToBeChecked = get_frame_info(page_directory, iteratorAddress, &ptrToFTable);
-			if(frameToBeChecked != 0) {
-				iteratorAddress += PAGE_SIZE;
-				continue;
-			}
-			else {
-				totalNumOfPages--;
-			}
-		}
-
-	}
-
-	return NumOfPages + NumOfTables;
+	return totalNumOfPages + NumOfTables;
 
 }
 

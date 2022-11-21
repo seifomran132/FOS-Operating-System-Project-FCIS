@@ -5,7 +5,7 @@
 
 /*Data*/
 
-#define STATIC_MEMBLOCK_ALLOC 1
+#define STATIC_MEMBLOCK_ALLOC 0
 
 typedef LIST_ENTRY(MemBlock) MemBlock_LIST_entry_t;
 LIST_HEAD(MemBlock_List, MemBlock); //macro define struct named with MemBlock_List, and the type of the its pointers

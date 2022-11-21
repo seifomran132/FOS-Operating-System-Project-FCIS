@@ -707,6 +707,7 @@ int test_copy_paste_chunk()
 		numOfFreeFramesBefore = sys_calculate_free_frames();
 
 		int ret = copy_paste_chunk(proc_directory, 0x200000, 0x400000, 6*kilo);
+		cprintf("1- ch12: %c tch: %d\n", *ch12, ch12);
 
 		numOfFreeFramesAfter = sys_calculate_free_frames();
 
@@ -737,7 +738,7 @@ int test_copy_paste_chunk()
 		if (*ch1 != 'a' || *ch2 != 'a' || *ch3 != 'y' || *ch4 != 'b' || *ch5 != 'c' || *ch6 != 'z'
 				||  *ch7 != 'w' || *ch8 != 'd' || *ch9 != 'e' || *ch10!= 'e' || *ch11!= 'f' || *ch12 != tch[12])
 		{
-			cprintf("%s %d\n", ch4, &ch4);
+			cprintf("%c %d\n", *ch12, tch[12]);
 			cprintf("%d %d %d %d %d %d %d %d %d %d %d %d \n", *ch1 != 'a', *ch2 != 'a', *ch3 != 'y', *ch4 != 'b', *ch5 != 'c', *ch6 != 'z', *ch7 != 'w', *ch8 != 'd', *ch9 != 'e', *ch10!= 'e', *ch11!= 'f', *ch12 != tch[12]);
 			warn("[EVAL] copy_paste_chunk: Failed (content is not correct)\n");
 			correct = 0;
@@ -772,6 +773,8 @@ int test_copy_paste_chunk()
 		if (*ch1 != 'a' || *ch2 != 'a' || *ch3 != 'y' || *ch4 != 'b' || *ch5 != 'z' || *ch6 != 'z' ||
 				*ch7 != 'd' || *ch8 != 'd' || *ch9 != 'e' || *ch10!= 'x' || *ch11!= 'f'  || *ch12 != tch[12])
 		{
+			cprintf("%c %d\n", *ch3, ch3);
+			cprintf("%d %d %d %d %d %d %d %d %d %d %d %d \n", *ch1 != 'a', *ch2 != 'a', *ch3 != 'y', *ch4 != 'b', *ch5 != 'z', *ch6 != 'z', *ch7 != 'd', *ch8 != 'd', *ch9 != 'e', *ch10!= 'e', *ch11!= 'f', *ch12 != tch[12]);
 			warn("[EVAL] copy_paste_chunk: Failed (content is not correct)\n");
 			correct = 0;
 		}
@@ -968,7 +971,7 @@ int test_share_chunk()
 
 		if (ret != 0 || (numOfFreeFramesBefore - numOfFreeFramesAfter) != (32*mega) / (4*mega))
 		{
-			warn("[EVAL] share_chunk: Failed (# allocated frames is not correct) ret=%d diff=%d\n", ret, numOfFreeFramesBefore - numOfFreeFramesAfter);
+			warn("[EVAL] share_chunk: Failed (# allocated frames is not correct) ret=%d diff=%d, d=%d\n", ret, numOfFreeFramesBefore - numOfFreeFramesAfter, (32*mega) / (4*mega));
 			correct = 0;
 		}
 		if (correct) eval += 5 ;

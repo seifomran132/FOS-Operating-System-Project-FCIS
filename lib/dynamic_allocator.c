@@ -69,13 +69,18 @@ void initialize_MemBlocksList(uint32 numOfBlocks)
 	//panic("initialize_MemBlocksList() is not implemented yet...!!");
 
 
+	cprintf("From init: %d \n", &MemBlockNodes);
+
 	LIST_INIT(&AvailableMemBlocksList);
+	cprintf("Test 1\n");
 	LIST_INSERT_HEAD(&AvailableMemBlocksList, &MemBlockNodes[0]);
+	cprintf("Test 2\n");
 	int i;
 	for (i = 1; i < numOfBlocks; i++) {
 		MemBlockNodes[i].size = 0;
 		MemBlockNodes[i].sva = 0;
 		LIST_INSERT_TAIL(&AvailableMemBlocksList, &MemBlockNodes[i]);
+		//cprintf("Test 3 %d\n", i);
 	}
 
 
