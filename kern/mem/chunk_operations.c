@@ -147,21 +147,36 @@ int copy_paste_chunk(uint32* page_directory, uint32 source_va, uint32 dest_va, u
 
 				int srcPerms = pt_get_page_permissions(page_directory, srcAddressItr);
 				int mapres = map_frame(page_directory, destFrame, destAddressItr, srcPerms);
+
+
+//				uint32 contIt = srcAddressItr;
+//				uint32 destContIt = destAddressItr;
+//				for(int i = 0; i < 4096; i++) {
+//					unsigned char *destFrameContent = (unsigned char*)(destContIt);
+//					unsigned char *srcFrameContent = (unsigned char*)(contIt);
+//
+//					if(*srcFrameContent == 0) {
+//						//cprintf("I: %d, Src Frame Content: %c A: %d\n", destContIt-destAddressItr, *srcFrameContent, destContIt);
+//						*destFrameContent = 0;
+//					}
+//						*destFrameContent = *srcFrameContent;
+//
+//					destContIt += 1;
+//					contIt += 1;
+//				}
+
+
 				uint32 contIt = srcAddressItr;
 				uint32 destContIt = destAddressItr;
-				for(int i = 0; i < 4096; i++) {
+				while(contIt < srcAddressItr + PAGE_SIZE) {
 					unsigned char *destFrameContent = (unsigned char*)(destContIt);
 					unsigned char *srcFrameContent = (unsigned char*)(contIt);
-
-					if(*srcFrameContent == 0) {
-						//cprintf("I: %d, Src Frame Content: %c A: %d\n", destContIt-destAddressItr, *srcFrameContent, destContIt);
-						*destFrameContent = 0;
-					}
-						*destFrameContent = *srcFrameContent;
-
+					//cprintf("Src Frame Content: %c \n", *srcFrameContent);
+					*destFrameContent = *srcFrameContent;
 					destContIt += 1;
 					contIt += 1;
 				}
+
 				//destTablePtr[PTX(destAddressItr)] = srcTablePtr[PTX(srcAddressItr)];
 
 

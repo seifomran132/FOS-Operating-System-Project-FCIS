@@ -86,13 +86,28 @@ void* kmalloc(unsigned int size)
 {
 	//TODO: [PROJECT MS2] [KERNEL HEAP] kmalloc
 	// your code is here, remove the panic and write your code
-	kpanic_into_prompt("kmalloc() is not implemented yet...!!");
+	//kpanic_into_prompt("kmalloc() is not implemented yet...!!");
 
 	//NOTE: All kernel heap allocations are multiples of PAGE_SIZE (4KB)
 	//refer to the project presentation and documentation for details
 	// use "isKHeapPlacementStrategyFIRSTFIT() ..." functions to check the current strategy
 
 	//change this "return" according to your answer
+
+	struct MemBlock* ptr = NULL;
+	void*ptrAllocation;
+	if(isKHeapPlacementStrategyFIRSTFIT())
+	{
+		//ptr=alloc_block_FF(size);
+		//allocation
+	}
+	if(isKHeapPlacementStrategyBESTFIT())
+	{
+		//ptr=alloc_block_BF(size);
+		//allocation
+	}
+
+	return ptr;
 }
 
 void kfree(void* virtual_address)
@@ -100,6 +115,8 @@ void kfree(void* virtual_address)
 	//TODO: [PROJECT MS2] [KERNEL HEAP] kfree
 	// Write your code here, remove the panic and write your code
 	panic("kfree() is not implemented yet...!!");
+
+
 
 }
 
