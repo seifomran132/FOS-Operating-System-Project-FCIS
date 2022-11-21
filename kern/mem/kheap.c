@@ -61,7 +61,7 @@ void initialize_dyn_block_system()
 void* kmalloc(unsigned int size)
 {
 	struct MemBlock* ptr;
-	void*ptrAllocation;
+	void*ptrAllocation=NULL;
 	if(isKHeapPlacementStrategyFIRSTFIT())
 	{
 		ptr=alloc_block_FF(size);
@@ -72,7 +72,7 @@ void* kmalloc(unsigned int size)
 		ptr=alloc_block_BF(size);
 		//allocation
 	}
-
+	return ptrAllocation;
 }
 
 void kfree(void* virtual_address)
