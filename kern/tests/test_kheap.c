@@ -4943,7 +4943,7 @@ int test_initialize_dyn_block_system(int freeFrames_before, int freeDiskFrames_b
 	struct MemBlock* block = LIST_FIRST(&FreeMemBlocksList);
 	if(block == NULL || block->size != (KERNEL_HEAP_MAX-0xF6000000-DYNAMIC_ALLOCATOR_DS) || block->sva != 0xF6000000+DYNAMIC_ALLOCATOR_DS)
 	{
-		panic("Wrong initialize: Wrong content for the FreeMemBlocksList.");
+		panic("Wrong initialize: Wrong content for the FreeMemBlocksList. %d \t %d", block->size != (KERNEL_HEAP_MAX-0xF6000000-DYNAMIC_ALLOCATOR_DS));
 	}
 
 	//Check number of disk and memory frames

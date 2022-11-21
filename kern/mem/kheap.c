@@ -30,11 +30,16 @@ void initialize_dyn_block_system()
 	 * 		2. allocation should be aligned on PAGE boundary
 	 * 	HINT: can use alloc_chunk(...) function
 	 */
-	uint32 numOfElements = ((KERNEL_HEAP_MAX - KERNEL_HEAP_START));
-	MAX_MEM_BLOCK_CNT = NUM_OF_KHEAP_PAGES;
-	allocate_chunk(ptr_page_directory, KERNEL_HEAP_START, MAX_MEM_BLOCK_CNT, (PERM_PRESENT | PERM_WRITEABLE));
+	uint32 heapSize = (KERNEL_HEAP_MAX - KERNEL_HEAP_START);
+	uint32 numOfElements = (heapSize / PAGE_SIZE);
+
+	MAX_MEM_BLOCK_CNT = numOfElements;
 
 	MemBlockNodes = (struct MemBlock*)KERNEL_HEAP_START;
+
+	uint32 totalSizeRequired = numOfElements * sizeof(struct MemBlock);
+	allocate_chunk(ptr_page_directory, KERNEL_HEAP_START, totalSizeRequired, (PERM_PRESENT | PERM_WRITEABLE));
+
 
 #endif
 	//[3] Initialize AvailableMemBlocksList by filling it with the MemBlockNodes
@@ -44,24 +49,37 @@ void initialize_dyn_block_system()
 	cprintf("PAGE_SIZE %x \n", PAGE_SIZE);
 	cprintf("MAX_MEM_BLOCK_CNT: %d \n", MAX_MEM_BLOCK_CNT);
 
-	uint32 i;
-	for (i = 0; i < MAX_MEM_BLOCK_CNT; i++) {
-		MemBlockNodes[i].size = 0;
-		MemBlockNodes[i].sva = 0;
-		LIST_INSERT_TAIL(&AvailableMemBlocksList, &MemBlockNodes[i]);
-		cprintf("av %d \n", LIST_SIZE(&(AvailableMemBlocksList)));
-	}
 
-	cprintf("i %x \n", i);
+	initialize_MemBlocksList(MAX_MEM_BLOCK_CNT);
+//	uint32 i;
+//	for (i = 0; i < MAX_MEM_BLOCK_CNT; i++) {
+//		MemBlockNodes[i].size = 0;
+//		MemBlockNodes[i].sva = 0;
+//		LIST_INSERT_TAIL(&AvailableMemBlocksList, &MemBlockNodes[i]);
+//		cprintf("av %d \n", LIST_SIZE(&(AvailableMemBlocksList)));
+//	}
+//
+//	cprintf("i %x \n", i);
 	//initialize_MemBlocksList(MAX_MEM_BLOCK_CNT);
 	//cprintf("av %d /n",LIST_SIZE(&(AvailableMemBlocksList)));
 
 
 	//[4] Insert a new MemBlock with the remaining heap size into the FreeMemBlocksList
-	struct MemBlock block;
-	block.sva = MAX_MEM_BLOCK_CNT - 1;
-	block.size = PAGE_SIZE;
-	insert_sorted_with_merge_freeList(&block);
+	struct MemBlock *allocatedForFree = LIST_FIRST(&AvailableMemBlocksList);
+	LIST_REMOVE(&AvailableMemBlocksList, allocatedForFree);
+
+	uint32 restedSize = (KERNEL_HEAP_MAX - KERNEL_HEAP_START) - totalSizeRequired - sizeof(struct MemBlock);
+	cprintf("rested size: %d \n", restedSize);
+
+	uint32 freeStartSVA = KERNEL_HEAP_START + totalSizeRequired - sizeof(struct MemBlock);
+
+	allocatedForFree->size = restedSize;
+	allocatedForFree->sva = ROUNDUP(KERNEL_HEAP_START + totalSizeRequired, PAGE_SIZE);
+
+	insert_sorted_with_merge_freeList(allocatedForFree);
+
+
+	cprintf("MAX BLOCKS: %d  LIST SIZE: %d \n", MAX_MEM_BLOCK_CNT, LIST_SIZE(&AvailableMemBlocksList));
 	cprintf("Test after insert \n");
 }
 void* kmalloc(unsigned int size)
