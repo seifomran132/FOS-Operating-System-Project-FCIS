@@ -141,5 +141,34 @@ void *krealloc(void *virtual_address, uint32 new_size)
 {
 	//TODO: [PROJECT MS2 - BONUS] [KERNEL HEAP] krealloc
 	// Write your code here, remove the panic and write your code
-	panic("krealloc() is not implemented yet...!!");
+	//panic("krealloc() is not implemented yet...!!");
+
+
+	struct MemBlock* NewVirAdd ;
+	struct MemBlock* NxtPa   ;
+	struct frame_info* CheckEmptness ;
+
+
+	NewVirAdd->sva= virtual_address;
+	NxtPa->sva = virtual_address;
+	NxtPa =NxtPa->prev_next_info.le_next;
+	CheckEmptness = get_frame_info (NxtPa);
+
+			if(CheckEmptness==0){
+				if (NewVirAdd->size+NxtPa->size>=new_size){
+					NewVirAdd->size=new_size;
+				}
+			}
+			if (virtual_address==NULL){
+				NewVirAdd=kmalloc(new_size);
+			}
+			else if (new_size==0){
+				NewVirAdd=kfree(virtual_address);
+			}
+			else {
+				NewVirAdd=alloc_block_FF(new_size);
+			}
+
+	return NewVirAdd ;
+
 }
