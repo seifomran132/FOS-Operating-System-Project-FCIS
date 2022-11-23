@@ -45,19 +45,19 @@ void initialize_dyn_block_system()
 
 
 #endif
-//	//[3] Initialize AvailableMemBlocksList by filling it with the MemBlockNodes
-//	initialize_MemBlocksList(MAX_MEM_BLOCK_CNT);
-//	cprintf("MAX 1: %d \n", MAX_MEM_BLOCK_CNT);
-//	//[4] Insert a new MemBlock with the remaining heap size into the FreeMemBlocksList
-//	struct MemBlock* allocatedForFree = LIST_FIRST(&AvailableMemBlocksList);
-//	LIST_REMOVE(&AvailableMemBlocksList, allocatedForFree);
-//	cprintf("MAX 2: %d \n", MAX_MEM_BLOCK_CNT);
-//	//The Block which will be inserted in Free list
-//	uint32 restedSize = (KERNEL_HEAP_MAX - KERNEL_HEAP_START) - totalSizeRequired - sizeof(struct MemBlock);
-//	allocatedForFree->size = restedSize;
-//	allocatedForFree->sva = ROUNDUP(KERNEL_HEAP_START + totalSizeRequired, PAGE_SIZE);
-//	insert_sorted_with_merge_freeList(allocatedForFree);
-//	cprintf("MAX 3: %d \n", MAX_MEM_BLOCK_CNT);
+	//[3] Initialize AvailableMemBlocksList by filling it with the MemBlockNodes
+	initialize_MemBlocksList(MAX_MEM_BLOCK_CNT);
+	cprintf("MAX 1: %d \n", MAX_MEM_BLOCK_CNT);
+	//[4] Insert a new MemBlock with the remaining heap size into the FreeMemBlocksList
+	struct MemBlock* allocatedForFree = LIST_FIRST(&AvailableMemBlocksList);
+	LIST_REMOVE(&AvailableMemBlocksList, allocatedForFree);
+	cprintf("MAX 2: %d \n", MAX_MEM_BLOCK_CNT);
+	//The Block which will be inserted in Free list
+	uint32 restedSize = (KERNEL_HEAP_MAX - KERNEL_HEAP_START) - totalSizeRequired - sizeof(struct MemBlock);
+	allocatedForFree->size = restedSize;
+	allocatedForFree->sva = ROUNDUP(KERNEL_HEAP_START + totalSizeRequired, PAGE_SIZE);
+	insert_sorted_with_merge_freeList(allocatedForFree);
+	cprintf("MAX 3: %d \n", MAX_MEM_BLOCK_CNT);
 }
 void* kmalloc(unsigned int size)
 {
@@ -104,7 +104,6 @@ void kfree(void* virtual_address)
 	//TODO: [PROJECT MS2] [KERNEL HEAP] kfree
 	// Write your code here, remove the panic and write your code
 	panic("kfree() is not implemented yet...!!");
-
 
 
 }
@@ -167,5 +166,37 @@ void *krealloc(void *virtual_address, uint32 new_size)
 {
 	//TODO: [PROJECT MS2 - BONUS] [KERNEL HEAP] krealloc
 	// Write your code here, remove the panic and write your code
-	panic("krealloc() is not implemented yet...!!");
+	//panic("krealloc() is not implemented yet...!!");
+
+
+	struct MemBlock* NewVirAdd ;
+	struct MemBlock* NxtPa   ;
+	struct FrameInfo* CheckEmptness;
+
+
+	 NewVirAdd=virtual_address;
+	 NxtPa = virtual_address + PAGE_SIZE;
+	 uint32 *TabPa =NULL;
+	 uint32 *dir=NULL;
+	//NxtPa =NxtPa->prev_next_info.le_next;
+	 CheckEmptness= get_frame_info(dir,NxtPa->sva,&TabPa);
+
+			if(CheckEmptness==NULL){
+				if (NewVirAdd->size+NxtPa->size>=new_size){
+					NewVirAdd->size=new_size;
+				}
+			}
+			if (virtual_address==NULL){
+				NewVirAdd=kmalloc(new_size);
+			}
+			else if (new_size==0){
+				kfree(virtual_address);
+				NewVirAdd=NULL;
+			}
+			else {
+				NewVirAdd=alloc_block_BF(new_size);
+			}
+
+	return NewVirAdd ;
+
 }
