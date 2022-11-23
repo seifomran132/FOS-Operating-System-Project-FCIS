@@ -81,6 +81,7 @@ void kfree(void* virtual_address)
 	// Write your code here, remove the panic and write your code
 	panic("kfree() is not implemented yet...!!");
 
+
 }
 
 unsigned int kheap_virtual_address(unsigned int physical_address)
@@ -146,15 +147,17 @@ void *krealloc(void *virtual_address, uint32 new_size)
 
 	struct MemBlock* NewVirAdd ;
 	struct MemBlock* NxtPa   ;
-	struct frame_info* CheckEmptness ;
+	struct Frame_Info* CheckEmptness;
 
 
-	NewVirAdd->sva= virtual_address;
-	NxtPa->sva = virtual_address;
-	NxtPa =NxtPa->prev_next_info.le_next;
-	CheckEmptness = get_frame_info (NxtPa);
+	 NewVirAdd=virtual_address;
+	 NxtPa=++virtual_address;
+	 uint32 *TabPa =NULL;
+	 uint32 *dir=NULL;
+	//NxtPa =NxtPa->prev_next_info.le_next;
+	 CheckEmptness= get_frame_info(dir,NxtPa->sva,&TabPa);
 
-			if(CheckEmptness==0){
+			if(CheckEmptness==NULL){
 				if (NewVirAdd->size+NxtPa->size>=new_size){
 					NewVirAdd->size=new_size;
 				}
@@ -163,7 +166,8 @@ void *krealloc(void *virtual_address, uint32 new_size)
 				NewVirAdd=kmalloc(new_size);
 			}
 			else if (new_size==0){
-				NewVirAdd=kfree(virtual_address);
+				kfree(virtual_address);
+				NewVirAdd=NULL;
 			}
 			else {
 				NewVirAdd=alloc_block_FF(new_size);
