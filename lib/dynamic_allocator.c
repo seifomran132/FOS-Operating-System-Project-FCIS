@@ -94,11 +94,12 @@ struct MemBlock* find_block(struct MemBlock_List* blockList, uint32 va)
 	//TODO: [PROJECT MS1] [DYNAMIC ALLOCATOR] find_block
 	// Write your code here, remove the panic and write your code
 	//panic("find_block() is not implemented yet...!!");
-
+	cprintf("Enter Find\n");
 
 	struct MemBlock* node = NULL;
 	LIST_FOREACH(node, blockList)
 	{
+		cprintf("Block: %d \n", node->sva);
 		if (node->sva == va)
 		{
 			struct MemBlock* tmp = node;
@@ -178,7 +179,6 @@ struct MemBlock* alloc_block_FF(uint32 size)
 		{
 			if (ptrFreeLooper == FreeMemBlocksList.lh_last)
 			{
-				cprintf("Couldn't find\n");
 				ptrFreeLooper = NULL;
 				break;
 			}
@@ -189,7 +189,6 @@ struct MemBlock* alloc_block_FF(uint32 size)
 		//case grater size
 		if (ptrFreeLooper->size > size)
 		{
-			cprintf("Size Greater Than\t blockSize: %d\t givenSize: %d\t diff: %d\n", ptrFreeLooper->size, size, ptrFreeLooper->size - size);
 			struct MemBlock* ptrToBeKept;
 			//init block to be returned
 			ptrToBeKept = LIST_LAST(&AvailableMemBlocksList);
@@ -206,7 +205,6 @@ struct MemBlock* alloc_block_FF(uint32 size)
 		//case if size is equal to given size
 		if (ptrFreeLooper->size == size)
 		{
-			cprintf("Sizes Equal\n");
 			LIST_REMOVE(&FreeMemBlocksList, ptrFreeLooper);
 			break;
 		}

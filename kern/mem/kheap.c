@@ -61,39 +61,34 @@ void initialize_dyn_block_system()
 }
 void* kmalloc(unsigned int size)
 {
-
-
-
 	struct MemBlock* ptr;
-	void*ptrAllocation=NULL;
+	void *ptrAllocation=NULL;
+	unsigned int Roundedsize=ROUNDUP(size,PAGE_SIZE);
+
 	if(isKHeapPlacementStrategyFIRSTFIT())
 	{
-		ptr=alloc_block_FF(size);
-
-		if(ptr == NULL) {
-			cprintf("Couldn't find place\n");
-			return NULL;
-		}
-
-		cprintf("PTR Size: %d  SVA: %d\n", ptr->size, ptr->sva);
+		//passing to FF
+		ptr=alloc_block_FF(Roundedsize);
+		//check returned Memblock data
+		if(ptr == NULL){return NULL;}
 		//allocation
-		allocate_chunk(ptr_page_directory,ptr->sva,ptr->size,(PERM_PRESENT | PERM_WRITEABLE));
-		ptrAllocation=ptr;
+		allocate_chunk(ptr_page_directory,ptr->sva,ptr->size,3);
+		//Insert in Allocated
+		insert_sorted_allocList(ptr);
+		//assigning by casting
+		ptrAllocation=&(*(uint32*)ptr->sva);
 	}
+
 	if(isKHeapPlacementStrategyBESTFIT())
 	{
-		ptr=alloc_block_BF(size);
+		//passing to BF
+		ptr=alloc_block_BF(Roundedsize);
+		//check Memblock data
+		if(ptr == NULL){return NULL;}
 		//allocation
-//		uint32 pdx=PDX(&ptr);
-//		cprintf(" pdx %d",pdx);
-
-		if(ptr == NULL) {
-			cprintf("Couldn't find place\n");
-			return NULL;
-		}
-
-		allocate_chunk(ptr_page_directory,ptr->sva,ptr->size,(PERM_PRESENT | PERM_WRITEABLE));
-		ptrAllocation=ptr;
+		allocate_chunk(ptr_page_directory,ptr->sva,ptr->size,3);
+		//assigning by casting
+		ptrAllocation=&(*(uint32*)ptr->sva);
 	}
 
 	return ptrAllocation;
@@ -101,11 +96,38 @@ void* kmalloc(unsigned int size)
 
 void kfree(void* virtual_address)
 {
+	cprintf("Enter KFREE %d\n", virtual_address);
 	//TODO: [PROJECT MS2] [KERNEL HEAP] kfree
 	// Write your code here, remove the panic and write your code
-	panic("kfree() is not implemented yet...!!");
+	//panic("kfree() is not implemented yet...!!");
 
+	uint32 blockAddress = ROUNDDOWN((uint32)virtual_address, PAGE_SIZE);
+	struct MemBlock * wantedBlock = find_block(&AllocMemBlocksList, blockAddress);
 
+	if(wantedBlock != NULL) {
+		uint32 blockEnd = wantedBlock->sva + wantedBlock->size;
+		uint32 startingAddress = ROUNDDOWN(wantedBlock->sva, PAGE_SIZE);
+
+		cprintf("Block Start: %d Block Size: %d Block End: %d \n", wantedBlock->sva, wantedBlock->size, blockEnd);
+		while (startingAddress < blockEnd) {
+
+			uint32 *framePT = NULL;
+			struct FrameInfo* frameToFree = get_frame_info(ptr_page_directory, startingAddress, &framePT);
+			free_frame(frameToFree);
+			unmap_frame(ptr_page_directory, startingAddress);
+			cprintf("Address: %d freed\n", startingAddress);
+			startingAddress += PAGE_SIZE;
+		}
+		cprintf("Trace 1\n");
+		LIST_REMOVE(&AllocMemBlocksList, wantedBlock);
+		cprintf("Trace 2\n");
+		insert_sorted_with_merge_freeList(wantedBlock);
+		cprintf("Trace 3\n");
+	}
+	else {
+		cprintf("NULL\n");
+	}
+	cprintf("Kfree End\n");
 }
 
 unsigned int kheap_virtual_address(unsigned int physical_address)
