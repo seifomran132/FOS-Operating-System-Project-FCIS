@@ -45,34 +45,57 @@ void initialize_dyn_block_system()
 
 
 #endif
-	//[3] Initialize AvailableMemBlocksList by filling it with the MemBlockNodes
-	initialize_MemBlocksList(MAX_MEM_BLOCK_CNT);
-	cprintf("MAX 1: %d \n", MAX_MEM_BLOCK_CNT);
-	//[4] Insert a new MemBlock with the remaining heap size into the FreeMemBlocksList
-	struct MemBlock* allocatedForFree = LIST_FIRST(&AvailableMemBlocksList);
-	LIST_REMOVE(&AvailableMemBlocksList, allocatedForFree);
-	cprintf("MAX 2: %d \n", MAX_MEM_BLOCK_CNT);
-	//The Block which will be inserted in Free list
-	uint32 restedSize = (KERNEL_HEAP_MAX - KERNEL_HEAP_START) - totalSizeRequired - sizeof(struct MemBlock);
-	allocatedForFree->size = restedSize;
-	allocatedForFree->sva = ROUNDUP(KERNEL_HEAP_START + totalSizeRequired, PAGE_SIZE);
-	insert_sorted_with_merge_freeList(allocatedForFree);
-	cprintf("MAX 3: %d \n", MAX_MEM_BLOCK_CNT);
+//	//[3] Initialize AvailableMemBlocksList by filling it with the MemBlockNodes
+//	initialize_MemBlocksList(MAX_MEM_BLOCK_CNT);
+//	cprintf("MAX 1: %d \n", MAX_MEM_BLOCK_CNT);
+//	//[4] Insert a new MemBlock with the remaining heap size into the FreeMemBlocksList
+//	struct MemBlock* allocatedForFree = LIST_FIRST(&AvailableMemBlocksList);
+//	LIST_REMOVE(&AvailableMemBlocksList, allocatedForFree);
+//	cprintf("MAX 2: %d \n", MAX_MEM_BLOCK_CNT);
+//	//The Block which will be inserted in Free list
+//	uint32 restedSize = (KERNEL_HEAP_MAX - KERNEL_HEAP_START) - totalSizeRequired - sizeof(struct MemBlock);
+//	allocatedForFree->size = restedSize;
+//	allocatedForFree->sva = ROUNDUP(KERNEL_HEAP_START + totalSizeRequired, PAGE_SIZE);
+//	insert_sorted_with_merge_freeList(allocatedForFree);
+//	cprintf("MAX 3: %d \n", MAX_MEM_BLOCK_CNT);
 }
 void* kmalloc(unsigned int size)
 {
+
+
+
 	struct MemBlock* ptr;
 	void*ptrAllocation=NULL;
 	if(isKHeapPlacementStrategyFIRSTFIT())
 	{
 		ptr=alloc_block_FF(size);
+
+		if(ptr == NULL) {
+			cprintf("Couldn't find place\n");
+			return NULL;
+		}
+
+		cprintf("PTR Size: %d  SVA: %d\n", ptr->size, ptr->sva);
 		//allocation
+		allocate_chunk(ptr_page_directory,ptr->sva,ptr->size,(PERM_PRESENT | PERM_WRITEABLE));
+		ptrAllocation=ptr;
 	}
 	if(isKHeapPlacementStrategyBESTFIT())
 	{
 		ptr=alloc_block_BF(size);
 		//allocation
+//		uint32 pdx=PDX(&ptr);
+//		cprintf(" pdx %d",pdx);
+
+		if(ptr == NULL) {
+			cprintf("Couldn't find place\n");
+			return NULL;
+		}
+
+		allocate_chunk(ptr_page_directory,ptr->sva,ptr->size,(PERM_PRESENT | PERM_WRITEABLE));
+		ptrAllocation=ptr;
 	}
+
 	return ptrAllocation;
 }
 

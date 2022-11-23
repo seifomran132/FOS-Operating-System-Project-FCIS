@@ -178,6 +178,7 @@ struct MemBlock* alloc_block_FF(uint32 size)
 		{
 			if (ptrFreeLooper == FreeMemBlocksList.lh_last)
 			{
+				cprintf("Couldn't find\n");
 				ptrFreeLooper = NULL;
 				break;
 			}
@@ -188,6 +189,7 @@ struct MemBlock* alloc_block_FF(uint32 size)
 		//case grater size
 		if (ptrFreeLooper->size > size)
 		{
+			cprintf("Size Greater Than\t blockSize: %d\t givenSize: %d\t diff: %d\n", ptrFreeLooper->size, size, ptrFreeLooper->size - size);
 			struct MemBlock* ptrToBeKept;
 			//init block to be returned
 			ptrToBeKept = LIST_LAST(&AvailableMemBlocksList);
@@ -204,6 +206,7 @@ struct MemBlock* alloc_block_FF(uint32 size)
 		//case if size is equal to given size
 		if (ptrFreeLooper->size == size)
 		{
+			cprintf("Sizes Equal\n");
 			LIST_REMOVE(&FreeMemBlocksList, ptrFreeLooper);
 			break;
 		}
