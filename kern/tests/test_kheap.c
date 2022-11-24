@@ -2459,9 +2459,9 @@ int test_kheap_virt_addr()
 		for (i = 1*Mega; i < (uint32)(end_of_kernel - KERNEL_BASE); i+=PAGE_SIZE)
 		{
 			uint32 retrievedVA = kheap_virtual_address(i);
-				cprintf("\nPA = %x, retrievedVA = %x\n", i, retrievedVA);
 			if (retrievedVA != 0)
 			{
+				cprintf("\nPA = %x, retrievedVA = %x\n", i, retrievedVA);
 				panic("Wrong kheap_virtual_address");
 			}
 		}

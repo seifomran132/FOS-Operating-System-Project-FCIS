@@ -11,7 +11,7 @@
 //==================================================================//
 
 
-uint32 framesArr[] = {};
+
 uint32 MBNEND = 0; // To locate MemBlockNodes
 void initialize_dyn_block_system()
 {
@@ -46,19 +46,7 @@ void initialize_dyn_block_system()
 	uint32 totalSizeRequired = numOfElements * sizeof(struct MemBlock);
 	allocate_chunk(ptr_page_directory, KERNEL_HEAP_START, totalSizeRequired, (PERM_PRESENT | PERM_WRITEABLE));
 
-//	uint32 va_it = KERNEL_HEAP_START;
-//	while (va_it < KERNEL_HEAP_START + totalSizeRequired) {
-//		uint32 *ptPtr = NULL;
-//		get_page_table(ptr_page_directory, va_it, &ptPtr);
-//		if(ptPtr != NULL) {
-//			uint32 tableEntry = ptPtr[PTX(va_it)];
-//			uint32 frameNum = tableEntry >> 12;
-//			framesArr[frameNum] = 0;
-//			cprintf("FN: %d\n", frameNum);
-//
-//		}
-//		va_it += PAGE_SIZE;
-//	}
+
 
 	//[3] Initialize AvailableMemBlocksList by filling it with the MemBlockNodes
 	initialize_MemBlocksList(MAX_MEM_BLOCK_CNT);
@@ -74,7 +62,7 @@ void initialize_dyn_block_system()
 #endif
 }
 
-
+uint32 framesArr[1048576];
 
 void* kmalloc(unsigned int size)
 {
@@ -116,7 +104,7 @@ void* kmalloc(unsigned int size)
 			uint32 tableEntry = ptPtr[PTX(va_it)];
 			uint32 frameNum = tableEntry >> 12;
 			framesArr[frameNum] = va_it;
-			cprintf("FN: %x\n", va_it);
+			//cprintf("FN: %x\n", va_it);
 
 		}
 		va_it += PAGE_SIZE;
