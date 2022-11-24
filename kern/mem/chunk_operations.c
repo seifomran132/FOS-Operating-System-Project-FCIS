@@ -263,11 +263,12 @@ int allocate_chunk(uint32* page_directory, uint32 va, uint32 size, uint32 perms)
 
 	// Check If Destination Exists
 	uint32 checkerIt = roundedStart;
-	while(checkerIt <= roundedEnd) {
+	while(checkerIt < roundedEnd) {
 
 		uint32 *destTablePtr = NULL;
 		struct FrameInfo *destFrameInfo = get_frame_info(page_directory, checkerIt, &destTablePtr);
 		if(destFrameInfo != NULL) {
+			cprintf("Addr: %d\n", checkerIt);
 			return -1;
 		}
 
@@ -286,7 +287,7 @@ int allocate_chunk(uint32* page_directory, uint32 va, uint32 size, uint32 perms)
 		struct FrameInfo *myFrameInfo = get_frame_info(page_directory, allocIt, &ptrToPT);
 		int ret = allocate_frame(&myFrameInfo);
 		int mapres = map_frame(page_directory, myFrameInfo, allocIt, perms);
-
+		//cprintf("Allocated: %d\n", allocIt);
 		allocIt += PAGE_SIZE;
 	}
 	return 0;

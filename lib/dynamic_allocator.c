@@ -226,7 +226,7 @@ struct MemBlock* alloc_block_BF(uint32 size)
 	struct MemBlock* var;
 	int entrance = 0;
 	int flag = 0;
-	ptr.size = 5555555;
+	ptr.size = 999999999;
 	var = &ptr;
 	//foreach to get into free list
 	LIST_FOREACH(ptrFreeLooper, &FreeMemBlocksList)
@@ -376,6 +376,7 @@ void insert_sorted_with_merge_freeList(struct MemBlock* blockToInsert)
 	else {
 		struct MemBlock* freeBlock;
 		LIST_FOREACH(freeBlock, &FreeMemBlocksList) {
+			cprintf("From Merge: %d \n", freeBlock->sva);
 			// CASE: Merge with prev and Next
 			if (
 				freeBlock->prev_next_info.le_next != NULL &&
@@ -399,6 +400,9 @@ void insert_sorted_with_merge_freeList(struct MemBlock* blockToInsert)
 				//Insert Elements to AvailableMemBlockList
 				LIST_INSERT_HEAD(&AvailableMemBlocksList, prtToBeRemoved);
 				LIST_INSERT_HEAD(&AvailableMemBlocksList, blockToInsert);
+
+				cprintf("MERGE BOTH\n");
+
 				break;
 			}
 			// Merge with prev
@@ -413,6 +417,7 @@ void insert_sorted_with_merge_freeList(struct MemBlock* blockToInsert)
 
 				// Insert to Available
 				LIST_INSERT_HEAD(&AvailableMemBlocksList, blockToInsert);
+				cprintf("MERGE WITH PREV\n");
 				break;
 			}
 			// Merge with Next
@@ -428,12 +433,13 @@ void insert_sorted_with_merge_freeList(struct MemBlock* blockToInsert)
 
 				// Insert to Available
 				LIST_INSERT_HEAD(&AvailableMemBlocksList, blockToInsert);
+				cprintf("MERGE WITH NEXT\n");
 				break;
 			}
 
 			// NO MERGE CASES
 			else {
-
+				cprintf("NO MERGE\n");
 				// Insert at tail
 				if (freeBlock->prev_next_info.le_next == NULL && blockToInsert->sva > LIST_FIRST(&FreeMemBlocksList)->sva) {
 					LIST_INSERT_TAIL(&FreeMemBlocksList, blockToInsert);
