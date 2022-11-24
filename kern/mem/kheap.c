@@ -10,6 +10,9 @@
 //==================================================================//
 //==================================================================//
 
+
+uint32 framesArr[] = {};
+uint32 MBNEND = 0; // To locate MemBlockNodes
 void initialize_dyn_block_system()
 {
 	//TODO: [PROJECT MS2] [KERNEL HEAP] initialize_dyn_block_system
@@ -43,22 +46,36 @@ void initialize_dyn_block_system()
 	uint32 totalSizeRequired = numOfElements * sizeof(struct MemBlock);
 	allocate_chunk(ptr_page_directory, KERNEL_HEAP_START, totalSizeRequired, (PERM_PRESENT | PERM_WRITEABLE));
 
+//	uint32 va_it = KERNEL_HEAP_START;
+//	while (va_it < KERNEL_HEAP_START + totalSizeRequired) {
+//		uint32 *ptPtr = NULL;
+//		get_page_table(ptr_page_directory, va_it, &ptPtr);
+//		if(ptPtr != NULL) {
+//			uint32 tableEntry = ptPtr[PTX(va_it)];
+//			uint32 frameNum = tableEntry >> 12;
+//			framesArr[frameNum] = 0;
+//			cprintf("FN: %d\n", frameNum);
+//
+//		}
+//		va_it += PAGE_SIZE;
+//	}
 
-#endif
 	//[3] Initialize AvailableMemBlocksList by filling it with the MemBlockNodes
 	initialize_MemBlocksList(MAX_MEM_BLOCK_CNT);
-	cprintf("MAX 1: %d \n", MAX_MEM_BLOCK_CNT);
 	//[4] Insert a new MemBlock with the remaining heap size into the FreeMemBlocksList
 	struct MemBlock* allocatedForFree = LIST_FIRST(&AvailableMemBlocksList);
 	LIST_REMOVE(&AvailableMemBlocksList, allocatedForFree);
-	cprintf("MAX 2: %d \n", MAX_MEM_BLOCK_CNT);
 	//The Block which will be inserted in Free list
 	uint32 restedSize = (KERNEL_HEAP_MAX - KERNEL_HEAP_START) - totalSizeRequired - sizeof(struct MemBlock);
 	allocatedForFree->size = restedSize;
 	allocatedForFree->sva = ROUNDUP(KERNEL_HEAP_START + totalSizeRequired, PAGE_SIZE);
+	MBNEND = KERNEL_HEAP_START + totalSizeRequired;
 	insert_sorted_with_merge_freeList(allocatedForFree);
-	cprintf("MAX 3: %d \n", MAX_MEM_BLOCK_CNT);
+#endif
 }
+
+
+
 void* kmalloc(unsigned int size)
 {
 	uint32 roundedSize = ROUNDUP(size, PAGE_SIZE);
@@ -70,6 +87,7 @@ void* kmalloc(unsigned int size)
 		}
 		else {
 			allocate_chunk(ptr_page_directory, allocatedBlock->sva, size, PERM_WRITEABLE);
+
 		}
 	}
 	else if(isKHeapPlacementStrategyBESTFIT()) {
@@ -89,6 +107,19 @@ void* kmalloc(unsigned int size)
 		else {
 			allocate_chunk(ptr_page_directory, allocatedBlock->sva, size, PERM_WRITEABLE);
 		}
+	}
+	uint32 va_it = allocatedBlock->sva;
+	while (va_it < allocatedBlock->sva + size) {
+		uint32 *ptPtr = NULL;
+		get_page_table(ptr_page_directory, va_it, &ptPtr);
+		if(ptPtr != NULL) {
+			uint32 tableEntry = ptPtr[PTX(va_it)];
+			uint32 frameNum = tableEntry >> 12;
+			framesArr[frameNum] = va_it;
+			cprintf("FN: %x\n", va_it);
+
+		}
+		va_it += PAGE_SIZE;
 	}
 	insert_sorted_allocList(allocatedBlock);
 
@@ -111,38 +142,47 @@ void kfree(void* virtual_address)
 		cprintf("Block Start: %d Block Size: %d Block End: %d \n", wantedBlock->sva, wantedBlock->size, blockEnd);
 		while (startingAddress < blockEnd) {
 
+			// Deleting from Frames Array
+			uint32 *ptPtr = NULL;
+			get_page_table(ptr_page_directory, startingAddress, &ptPtr);
+			if(ptPtr != NULL) {
+				uint32 tableEntry = ptPtr[PTX(startingAddress)];
+				uint32 frameNum = tableEntry >> 12;
+				framesArr[frameNum] = 0;
+				//cprintf("Delete FN: %d\n", frameNum);
+
+			}
 			uint32 *framePT = NULL;
 			struct FrameInfo* frameToFree = get_frame_info(ptr_page_directory, startingAddress, &framePT);
 			unmap_frame(ptr_page_directory, startingAddress);
-			//free_frame(frameToFree);
-			//cprintf("Address: %d freed\n", startingAddress); // -162893824 // -162902016
-			//cprintf("PT: %d\n", framePT[PTX(startingAddress + PAGE_SIZE)]);
-
-
 
 			startingAddress += PAGE_SIZE;
 		}
 
 
 		LIST_REMOVE(&AllocMemBlocksList, wantedBlock);
-		cprintf("Trace 1\n");
-
-		cprintf("Trace 2\n");
 		insert_sorted_with_merge_freeList(wantedBlock);
-		cprintf("Trace 3\n");
 	}
-	else {
-		cprintf("NULL\n");
-	}
-	cprintf("Kfree End\n");
 }
 
 unsigned int kheap_virtual_address(unsigned int physical_address)
 {
 	//TODO: [PROJECT MS2] [KERNEL HEAP] kheap_virtual_address
 	// Write your code here, remove the panic and write your code
-	panic("kheap_virtual_address() is not implemented yet...!!");
+	//panic("kheap_virtual_address() is not implemented yet...!!");
 
+	//cprintf("PA: %d\n", physical_address);
+
+	uint32 MemBNPA = kheap_physical_address((uint32)MemBlockNodes);
+
+	if(physical_address < kheap_physical_address(MBNEND) && physical_address > MemBNPA) {
+		return 0;
+	}
+
+	//cprintf("MEM: %d KHS: %d PA: %d\n", MemBNPA, kheap_physical_address(MBNEND), physical_address);
+	uint32 frameNumber = physical_address >> 12;
+	//cprintf("FN: %d\n", framesArr[frameNumber]);
+	return framesArr[frameNumber];
 	//return the virtual address corresponding to given physical_address
 	//refer to the project presentation and documentation for details
 	//EFFICIENT IMPLEMENTATION ~O(1) IS REQUIRED ==================
@@ -152,10 +192,13 @@ unsigned int kheap_physical_address(unsigned int virtual_address)
 {
 	//TODO: [PROJECT MS2] [KERNEL HEAP] kheap_physical_address
 	// Write your code here, remove the panic and write your code
-	panic("kheap_physical_address() is not implemented yet...!!");
+	//panic("kheap_physical_address() is not implemented yet...!!");
 
 	//return the physical address corresponding to given virtual_address
 	//refer to the project presentation and documentation for details
+
+	return virtual_to_physical(ptr_page_directory, virtual_address);
+
 }
 
 
