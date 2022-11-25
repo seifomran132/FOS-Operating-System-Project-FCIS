@@ -215,45 +215,43 @@ struct MemBlock* alloc_block_BF(uint32 size)
 	// Write your code here, remove the panic and write your code
 	//panic("alloc_block_BF() is not implemented yet...!!");
 
-	struct MemBlock* ptrFreeLooper;
-	struct MemBlock ptr;
-	struct MemBlock* var;
-	int entrance = 0;
-	int flag = 0;
-	ptr.size = 999999999;
-	var = &ptr;
-	//foreach to get into free list
-	LIST_FOREACH(ptrFreeLooper, &FreeMemBlocksList)
-	{
-		if (ptrFreeLooper->size > size && ptrFreeLooper->size < var->size) {
-			var = ptrFreeLooper;
-			entrance = 1;
-			flag = 1;
-		}
+	struct MemBlock* iterator;
+	struct MemBlock maximized;
+	struct MemBlock* bblock;
+	maximized.size = 999999999;
+	bblock = &maximized;
 
-		if (ptrFreeLooper->size == size)
+	int entrance = 0;
+	int k = 0;
+	LIST_FOREACH(iterator, &FreeMemBlocksList)
+	{
+
+		if (iterator->size == size)
 		{
-			LIST_REMOVE(&FreeMemBlocksList, ptrFreeLooper);
 			entrance = 1;
-			return ptrFreeLooper;
+			LIST_REMOVE(&FreeMemBlocksList, iterator);
+			return iterator;
+		}
+		else if (iterator->size > size && iterator->size < bblock->size) {
+			entrance = 1;
+			k = 1;
+			bblock = iterator;
 		}
 
 	}
-	//if entrance
-	if (entrance != 0 && flag == 1)
+	if (entrance != 0 && k == 1)
 	{
 
-		struct MemBlock* ptrToBeKept;
-		//init block to be returned
-		ptrToBeKept = LIST_LAST(&AvailableMemBlocksList);
-		ptrToBeKept->size = size;
-		ptrToBeKept->sva = var->sva;
-		//remove returned block from ava
-		LIST_REMOVE(&AvailableMemBlocksList, ptrToBeKept);
-		//updating remaining free block size
-		var->size = var->size - size;
-		var->sva = var->sva + size;
-		return ptrToBeKept;
+		struct MemBlock* fstBlock;
+		fstBlock = LIST_LAST(&AvailableMemBlocksList);
+		fstBlock->size = size;
+		fstBlock->sva = bblock->sva;
+		uint32 newSize = bblock->size - size;
+		uint32 newSva = bblock->sva + size;
+		bblock->size = newSize;
+		bblock->sva = newSva;
+		LIST_REMOVE(&AvailableMemBlocksList, fstBlock);
+		return fstBlock;
 
 
 	}
@@ -262,7 +260,7 @@ struct MemBlock* alloc_block_BF(uint32 size)
 		return NULL;
 	}
 
-	return ptrFreeLooper;
+	return iterator;
 }
 
 
