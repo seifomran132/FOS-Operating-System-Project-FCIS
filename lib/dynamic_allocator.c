@@ -88,12 +88,10 @@ struct MemBlock* find_block(struct MemBlock_List* blockList, uint32 va)
 	//TODO: [PROJECT MS1] [DYNAMIC ALLOCATOR] find_block
 	// Write your code here, remove the panic and write your code
 	//panic("find_block() is not implemented yet...!!");
-	cprintf("Enter Find\n");
 
 	struct MemBlock* node = NULL;
 	LIST_FOREACH(node, blockList)
 	{
-		cprintf("Block: %d \n", node->sva);
 		if (node->sva == va)
 		{
 			struct MemBlock* tmp = node;

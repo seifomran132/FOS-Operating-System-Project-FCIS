@@ -1782,17 +1782,13 @@ int test_kfree_bestfirstfit()
 		int freeFrames = sys_calculate_free_frames() ;
 		int freeDiskFrames = pf_calculate_free_frames() ;
 		kfree(ptr_allocations[0]);
-		cprintf("Kfree end test\n");
 		if ((freeDiskFrames - pf_calculate_free_frames()) != 0) panic("Page file is changed while it's not expected to. (pages are wrongly allocated/de-allocated in PageFile)");
-		cprintf("Kfree end test\n");
 		if ((sys_calculate_free_frames() - freeFrames) != 512 ) panic("Wrong kfree: pages in memory are not freed correctly");
-		cprintf("Kfree end test\n");
 
 		//kfree 1st 2 KB
 		freeFrames = sys_calculate_free_frames() ;
 		freeDiskFrames = pf_calculate_free_frames() ;
 		kfree(ptr_allocations[2]);
-		cprintf("Kfree test 2\n");
 		if ((freeDiskFrames - pf_calculate_free_frames()) != 0) panic("Page file is changed while it's not expected to. (pages are wrongly allocated/de-allocated in PageFile)");
 		if ((sys_calculate_free_frames() - freeFrames) != 1 ) panic("Wrong kfree: pages in memory are not freed correctly");
 
@@ -1800,7 +1796,6 @@ int test_kfree_bestfirstfit()
 		freeFrames = sys_calculate_free_frames() ;
 		freeDiskFrames = pf_calculate_free_frames() ;
 		kfree(ptr_allocations[1]);
-		cprintf("Kfree test 3\n");
 		if ((freeDiskFrames - pf_calculate_free_frames()) != 0) panic("Page file is changed while it's not expected to. (pages are wrongly allocated/de-allocated in PageFile)");
 		if ((sys_calculate_free_frames() - freeFrames) != 512) panic("Wrong kfree: pages in memory are not freed correctly");
 
