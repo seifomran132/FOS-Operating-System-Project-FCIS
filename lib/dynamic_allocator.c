@@ -237,7 +237,7 @@ struct MemBlock* alloc_block_BF(uint32 size)
 		}
 
 	}
-	if (entrance != 0 && k == 1)
+	if (entrance == 1 && k == 1)
 	{
 
 		struct MemBlock* fstBlock;
@@ -253,7 +253,7 @@ struct MemBlock* alloc_block_BF(uint32 size)
 
 
 	}
-	else if (entrance == 0)
+	else if (entrance != 1)
 	{
 		return NULL;
 	}
