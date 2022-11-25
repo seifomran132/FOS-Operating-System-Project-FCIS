@@ -75,7 +75,6 @@ void initialize_MemBlocksList(uint32 numOfBlocks)
 		MemBlockNodes[i].size = 0;
 		MemBlockNodes[i].sva = 0;
 		LIST_INSERT_TAIL(&AvailableMemBlocksList, &MemBlockNodes[i]);
-		//cprintf("Test 3 %d\n", i);
 	}
 
 
@@ -277,75 +276,75 @@ struct MemBlock* alloc_block_NF(uint32 size)
 	//panic("alloc_block_NF() is not implemented yet...!!");
 
 	struct MemBlock* ptrFreeLooper;
-		LIST_FOREACH(ptrFreeLooper, &FreeMemBlocksList)
-		{
-			if(ptrFreeLooper->sva > lastAllocBlockSVA) {
+	LIST_FOREACH(ptrFreeLooper, &FreeMemBlocksList)
+	{
+		if (ptrFreeLooper->sva > lastAllocBlockSVA) {
 
-				//case grater size
-				if (ptrFreeLooper->size > size)
-				{
-					struct MemBlock* ptrToBeKept;
-					//init block to be returned
-					ptrToBeKept = LIST_LAST(&AvailableMemBlocksList);
-					ptrToBeKept->size = size;
-					ptrToBeKept->sva = ptrFreeLooper->sva;
-					//remove returned block from avai
-					LIST_REMOVE(&AvailableMemBlocksList, ptrToBeKept);
-					//updating remaining free block size
-					ptrFreeLooper->size = ptrFreeLooper->size - size;
-					ptrFreeLooper->sva = ptrFreeLooper->sva + size;
-					//update returned block size
-					lastAllocBlockSVA = ptrToBeKept->sva;
-					return ptrToBeKept;
-				}
-				//case if size is equal to given size
-				if (ptrFreeLooper->size == size)
-				{
-					lastAllocBlockSVA = ptrFreeLooper->sva;
-					LIST_REMOVE(&FreeMemBlocksList, ptrFreeLooper);
-					break;
-				}
-
-
-
+			//case grater size
+			if (ptrFreeLooper->size > size)
+			{
+				struct MemBlock* ptrToBeKept;
+				//init block to be returned
+				ptrToBeKept = LIST_LAST(&AvailableMemBlocksList);
+				ptrToBeKept->size = size;
+				ptrToBeKept->sva = ptrFreeLooper->sva;
+				//remove returned block from avai
+				LIST_REMOVE(&AvailableMemBlocksList, ptrToBeKept);
+				//updating remaining free block size
+				ptrFreeLooper->size = ptrFreeLooper->size - size;
+				ptrFreeLooper->sva = ptrFreeLooper->sva + size;
+				//update returned block size
+				lastAllocBlockSVA = ptrToBeKept->sva;
+				return ptrToBeKept;
 			}
+			//case if size is equal to given size
+			if (ptrFreeLooper->size == size)
+			{
+				lastAllocBlockSVA = ptrFreeLooper->sva;
+				LIST_REMOVE(&FreeMemBlocksList, ptrFreeLooper);
+				break;
+			}
+
 
 
 		}
 
-		// In case it did not found any free block it start from the beginning of the list
 
-		if(ptrFreeLooper == NULL) {
-			LIST_FOREACH(ptrFreeLooper, &FreeMemBlocksList) {
-				//case grater size
-				if (ptrFreeLooper->size > size)
-				{
+	}
 
-					struct MemBlock* ptrToBeKept;
-					//init block to be returned
-					ptrToBeKept = LIST_LAST(&AvailableMemBlocksList);
-					ptrToBeKept->size = size;
-					ptrToBeKept->sva = ptrFreeLooper->sva;
-					//remove returned block from avai
-					LIST_REMOVE(&AvailableMemBlocksList, ptrToBeKept);
-					//updating remaining free block size
-					ptrFreeLooper->size = ptrFreeLooper->size - size;
-					ptrFreeLooper->sva = ptrFreeLooper->sva + size;
-					//update returned block size
-					lastAllocBlockSVA = ptrToBeKept->sva;
-					return ptrToBeKept;
-				}
-				//case if size is equal to given size
-				if (ptrFreeLooper->size == size)
-				{
-					lastAllocBlockSVA = ptrFreeLooper->sva;
-					LIST_REMOVE(&FreeMemBlocksList, ptrFreeLooper);
-					break;
-				}
+	// In case it did not found any free block it start from the beginning of the list
 
+	if (ptrFreeLooper == NULL) {
+		LIST_FOREACH(ptrFreeLooper, &FreeMemBlocksList) {
+			//case grater size
+			if (ptrFreeLooper->size > size)
+			{
+
+				struct MemBlock* ptrToBeKept;
+				//init block to be returned
+				ptrToBeKept = LIST_LAST(&AvailableMemBlocksList);
+				ptrToBeKept->size = size;
+				ptrToBeKept->sva = ptrFreeLooper->sva;
+				//remove returned block from avai
+				LIST_REMOVE(&AvailableMemBlocksList, ptrToBeKept);
+				//updating remaining free block size
+				ptrFreeLooper->size = ptrFreeLooper->size - size;
+				ptrFreeLooper->sva = ptrFreeLooper->sva + size;
+				//update returned block size
+				lastAllocBlockSVA = ptrToBeKept->sva;
+				return ptrToBeKept;
 			}
+			//case if size is equal to given size
+			if (ptrFreeLooper->size == size)
+			{
+				lastAllocBlockSVA = ptrFreeLooper->sva;
+				LIST_REMOVE(&FreeMemBlocksList, ptrFreeLooper);
+				break;
+			}
+
 		}
-		return ptrFreeLooper;
+	}
+	return ptrFreeLooper;
 
 }
 
@@ -363,7 +362,7 @@ void insert_sorted_with_merge_freeList(struct MemBlock* blockToInsert)
 		struct MemBlock* iterator;
 		LIST_FOREACH(iterator, &FreeMemBlocksList) {
 
-			struct MemBlock *nextBlock = iterator->prev_next_info.le_next;
+			struct MemBlock* nextBlock = iterator->prev_next_info.le_next;
 			uint32 blockToInsertLimit = blockToInsert->sva + blockToInsert->size;
 			uint32 iteratorLimit = iterator->sva + iterator->size;
 
@@ -405,7 +404,7 @@ void insert_sorted_with_merge_freeList(struct MemBlock* blockToInsert)
 			}
 
 			else {
-				struct MemBlock *listhead = LIST_FIRST(&FreeMemBlocksList);
+				struct MemBlock* listhead = LIST_FIRST(&FreeMemBlocksList);
 				if (nextBlock == NULL && blockToInsert->sva > listhead->sva) {
 					LIST_INSERT_TAIL(&FreeMemBlocksList, blockToInsert);
 					break;
@@ -428,9 +427,5 @@ void insert_sorted_with_merge_freeList(struct MemBlock* blockToInsert)
 		}
 
 	}
-
-	//cprintf("\nAFTER INSERT with MERGE:\n=====================\n");
-	//print_mem_block_lists();
-
 }
 

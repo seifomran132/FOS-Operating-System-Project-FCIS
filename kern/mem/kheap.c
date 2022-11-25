@@ -67,10 +67,10 @@ uint32 framesArr[1048576];
 void* kmalloc(unsigned int size)
 {
 	uint32 roundedSize = ROUNDUP(size, PAGE_SIZE);
-	struct MemBlock * allocatedBlock;
-	if(isKHeapPlacementStrategyFIRSTFIT()) {
+	struct MemBlock* allocatedBlock;
+	if (isKHeapPlacementStrategyFIRSTFIT()) {
 		allocatedBlock = alloc_block_FF(roundedSize);
-		if(allocatedBlock == NULL) {
+		if (allocatedBlock == NULL) {
 			return NULL;
 		}
 		else {
@@ -78,18 +78,18 @@ void* kmalloc(unsigned int size)
 
 		}
 	}
-	else if(isKHeapPlacementStrategyBESTFIT()) {
+	else if (isKHeapPlacementStrategyBESTFIT()) {
 		allocatedBlock = alloc_block_BF(roundedSize);
-		if(allocatedBlock == NULL) {
+		if (allocatedBlock == NULL) {
 			return NULL;
 		}
 		else {
 			allocate_chunk(ptr_page_directory, allocatedBlock->sva, size, PERM_WRITEABLE);
 		}
 	}
-	else if(isKHeapPlacementStrategyNEXTFIT()) {
+	else if (isKHeapPlacementStrategyNEXTFIT()) {
 		allocatedBlock = alloc_block_NF(roundedSize);
-		if(allocatedBlock == NULL) {
+		if (allocatedBlock == NULL) {
 			return NULL;
 		}
 		else {
@@ -98,49 +98,43 @@ void* kmalloc(unsigned int size)
 	}
 	uint32 va_it = allocatedBlock->sva;
 	while (va_it < allocatedBlock->sva + size) {
-		uint32 *ptPtr = NULL;
+		uint32* ptPtr = NULL;
 		get_page_table(ptr_page_directory, va_it, &ptPtr);
-		if(ptPtr != NULL) {
+		if (ptPtr != NULL) {
 			uint32 tableEntry = ptPtr[PTX(va_it)];
 			uint32 frameNum = tableEntry >> 12;
 			framesArr[frameNum] = va_it;
-			//cprintf("FN: %x\n", va_it);
-
 		}
 		va_it += PAGE_SIZE;
 	}
 	insert_sorted_allocList(allocatedBlock);
 
-	return (void *)allocatedBlock->sva;
+	return (void*)allocatedBlock->sva;
 }
 
 void kfree(void* virtual_address)
 {
-	cprintf("Enter KFREE %d\n", virtual_address);
 	//TODO: [PROJECT MS2] [KERNEL HEAP] kfree
 	// Write your code here, remove the panic and write your code
 	//panic("kfree() is not implemented yet...!!");
 
 	uint32 blockAddress = (uint32)virtual_address;
-	struct MemBlock * wantedBlock = find_block(&AllocMemBlocksList, blockAddress);
-	if(wantedBlock != NULL) {
+	struct MemBlock* wantedBlock = find_block(&AllocMemBlocksList, blockAddress);
+	if (wantedBlock != NULL) {
 		uint32 blockEnd = wantedBlock->sva + wantedBlock->size;
 		uint32 startingAddress = wantedBlock->sva;
-
-		cprintf("Block Start: %d Block Size: %d Block End: %d \n", wantedBlock->sva, wantedBlock->size, blockEnd);
 		while (startingAddress < blockEnd) {
 
 			// Deleting from Frames Array
-			uint32 *ptPtr = NULL;
+			uint32* ptPtr = NULL;
 			get_page_table(ptr_page_directory, startingAddress, &ptPtr);
-			if(ptPtr != NULL) {
+			if (ptPtr != NULL) {
 				uint32 tableEntry = ptPtr[PTX(startingAddress)];
 				uint32 frameNum = tableEntry >> 12;
 				framesArr[frameNum] = 0;
-				//cprintf("Delete FN: %d\n", frameNum);
 
 			}
-			uint32 *framePT = NULL;
+			uint32* framePT = NULL;
 			struct FrameInfo* frameToFree = get_frame_info(ptr_page_directory, startingAddress, &framePT);
 			unmap_frame(ptr_page_directory, startingAddress);
 
@@ -159,18 +153,13 @@ unsigned int kheap_virtual_address(unsigned int physical_address)
 	// Write your code here, remove the panic and write your code
 	//panic("kheap_virtual_address() is not implemented yet...!!");
 
-	//cprintf("PA: %d\n", physical_address);
-
 	uint32 MemBNPA = kheap_physical_address((uint32)MemBlockNodes);
-
-	if(physical_address < kheap_physical_address(MBNEND) && physical_address > MemBNPA) {
+	if (physical_address < kheap_physical_address(MBNEND) && physical_address > MemBNPA) {
 		return 0;
 	}
-
-	//cprintf("MEM: %d KHS: %d PA: %d\n", MemBNPA, kheap_physical_address(MBNEND), physical_address);
 	uint32 frameNumber = physical_address >> 12;
-	//cprintf("FN: %d\n", framesArr[frameNumber]);
 	return framesArr[frameNumber];
+
 	//return the virtual address corresponding to given physical_address
 	//refer to the project presentation and documentation for details
 	//EFFICIENT IMPLEMENTATION ~O(1) IS REQUIRED ==================
@@ -222,41 +211,41 @@ void kexpand(uint32 newSize)
 //	A call with virtual_address = null is equivalent to kmalloc().
 //	A call with new_size = zero is equivalent to kfree().
 
-void *krealloc(void *virtual_address, uint32 new_size)
+void* krealloc(void* virtual_address, uint32 new_size)
 {
 	//TODO: [PROJECT MS2 - BONUS] [KERNEL HEAP] krealloc
 	// Write your code here, remove the panic and write your code
-	//panic("krealloc() is not implemented yet...!!");
+	panic("krealloc() is not implemented yet...!!");
 
 
-	struct MemBlock* NewVirAdd ;
-	struct MemBlock* NxtPa   ;
-	struct FrameInfo* CheckEmptness;
-
-
-	 NewVirAdd=virtual_address;
-	 NxtPa = virtual_address + PAGE_SIZE;
-	 uint32 *TabPa =NULL;
-	 uint32 *dir=NULL;
-	//NxtPa =NxtPa->prev_next_info.le_next;
-	 CheckEmptness= get_frame_info(dir,NxtPa->sva,&TabPa);
-
-			if(CheckEmptness==NULL){
-				if (NewVirAdd->size+NxtPa->size>=new_size){
-					NewVirAdd->size=new_size;
-				}
-			}
-			if (virtual_address==NULL){
-				NewVirAdd=kmalloc(new_size);
-			}
-			else if (new_size==0){
-				kfree(virtual_address);
-				NewVirAdd=NULL;
-			}
-			else {
-				NewVirAdd=alloc_block_BF(new_size);
-			}
-
-	return NewVirAdd ;
+	//	struct MemBlock* NewVirAdd ;
+	//	struct MemBlock* NxtPa   ;
+	//	struct FrameInfo* CheckEmptness;
+	//
+	//
+	//	 NewVirAdd=virtual_address;
+	//	 NxtPa = virtual_address + PAGE_SIZE;
+	//	 uint32 *TabPa =NULL;
+	//	 uint32 *dir=NULL;
+	//	//NxtPa =NxtPa->prev_next_info.le_next;
+	//	 CheckEmptness= get_frame_info(dir,NxtPa->sva,&TabPa);
+	//
+	//			if(CheckEmptness==NULL){
+	//				if (NewVirAdd->size+NxtPa->size>=new_size){
+	//					NewVirAdd->size=new_size;
+	//				}
+	//			}
+	//			if (virtual_address==NULL){
+	//				NewVirAdd=kmalloc(new_size);
+	//			}
+	//			else if (new_size==0){
+	//				kfree(virtual_address);
+	//				NewVirAdd=NULL;
+	//			}
+	//			else {
+	//				NewVirAdd=alloc_block_BF(new_size);
+	//			}
+	//
+	//	return NewVirAdd ;
 
 }
