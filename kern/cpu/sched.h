@@ -35,9 +35,10 @@ uint8 num_of_ready_queues ;			// Number of ready queue(s)
 //===============
 
 //2015
+#define SCH_UNINITIALIZED -1
 #define SCH_STOPPED 0
 #define SCH_STARTED 1
-unsigned scheduler_status ;
+int scheduler_status ;
 
 #define CLOCK_INTERVAL_IN_MS 10 //milliseconds
 

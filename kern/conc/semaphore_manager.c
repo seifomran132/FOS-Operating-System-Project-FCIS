@@ -144,6 +144,7 @@ int free_semaphore_object(uint32 semaphoreObjectID)
 //======================
 int createSemaphore(int32 ownerEnvID, char* semaphoreName, uint32 initialValue)
 {
+	//TODO: [PROJECT MS3] [SEMAPHORES] createSemaphore
 	// your code is here, remove the panic and write your code
 	panic("createSemaphore() is not implemented yet...!!");
 
@@ -162,6 +163,7 @@ int createSemaphore(int32 ownerEnvID, char* semaphoreName, uint32 initialValue)
 //============
 void waitSemaphore(int32 ownerEnvID, char* semaphoreName)
 {
+	//TODO: [PROJECT MS3] [SEMAPHORES] waitSemaphore
 	// your code is here, remove the panic and write your code
 	panic("waitSemaphore() is not implemented yet...!!");
 
@@ -182,6 +184,7 @@ void waitSemaphore(int32 ownerEnvID, char* semaphoreName)
 //==============
 void signalSemaphore(int ownerEnvID, char* semaphoreName)
 {
+	//TODO: [PROJECT MS3] [SEMAPHORES] signalSemaphore
 	// your code is here, remove the panic and write your code
 	panic("signalSemaphore() is not implemented yet...!!");
 

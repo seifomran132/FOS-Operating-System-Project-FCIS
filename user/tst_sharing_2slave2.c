@@ -18,6 +18,9 @@ _main(void)
 		}
 		if (fullWS) panic("Please increase the WS size");
 	}
+	/*Dummy malloc to enforce the UHEAP initializations*/
+	malloc(0);
+	/*=================================================*/
 
 	int32 parentenvID = sys_getparentenvid();
 	uint32 *x, *z;

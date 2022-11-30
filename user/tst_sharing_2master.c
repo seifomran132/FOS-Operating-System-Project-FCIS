@@ -18,6 +18,10 @@ _main(void)
 		}
 		if (fullWS) panic("Please increase the WS size");
 	}
+	/*Dummy malloc to enforce the UHEAP initializations*/
+	malloc(0);
+	/*=================================================*/
+
 	uint32 *x, *y, *z ;
 
 	//x: Readonly

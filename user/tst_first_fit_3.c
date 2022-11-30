@@ -49,8 +49,8 @@ void _main(void)
 		ptr_allocations[1] = malloc(1*Mega-kilo);
 		if ((uint32) ptr_allocations[1] != (USER_HEAP_START + 1*Mega)) panic("Wrong start address for the allocated space... ");
 		//if ((freeFrames - sys_calculate_free_frames()) != 256 ) panic("Wrong allocation: ");
-		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  256) panic("Wrong page file allocation: ");
-		if ((freeFrames - sys_calculate_free_frames()) != 1 ) panic("Wrong allocation: ");
+		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  0) panic("Wrong page file allocation: ");
+		if ((freeFrames - sys_calculate_free_frames()) != 0 ) panic("Wrong allocation: ");
 
 		//Allocate 1 MB
 		freeFrames = sys_calculate_free_frames() ;
@@ -58,7 +58,7 @@ void _main(void)
 		ptr_allocations[2] = malloc(1*Mega-kilo);
 		if ((uint32) ptr_allocations[2] != (USER_HEAP_START + 2*Mega)) panic("Wrong start address for the allocated space... ");
 		//if ((freeFrames - sys_calculate_free_frames()) != 256 ) panic("Wrong allocation: ");
-		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  256) panic("Wrong page file allocation: ");
+		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  0) panic("Wrong page file allocation: ");
 		if ((freeFrames - sys_calculate_free_frames()) != 0 ) panic("Wrong allocation: ");
 
 		//Allocate 1 MB
@@ -67,7 +67,7 @@ void _main(void)
 		ptr_allocations[3] = malloc(1*Mega-kilo);
 		if ((uint32) ptr_allocations[3] != (USER_HEAP_START + 3*Mega) ) panic("Wrong start address for the allocated space... ");
 		//if ((freeFrames - sys_calculate_free_frames()) != 256 ) panic("Wrong allocation: ");
-		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  256) panic("Wrong page file allocation: ");
+		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  0) panic("Wrong page file allocation: ");
 		if ((freeFrames - sys_calculate_free_frames()) != 0 ) panic("Wrong allocation: ");
 
 		//Allocate 2 MB
@@ -76,8 +76,8 @@ void _main(void)
 		ptr_allocations[4] = malloc(2*Mega-kilo);
 		if ((uint32) ptr_allocations[4] != (USER_HEAP_START + 4*Mega)) panic("Wrong start address for the allocated space... ");
 		//if ((freeFrames - sys_calculate_free_frames()) != 512 + 1) panic("Wrong allocation: ");
-		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  512) panic("Wrong page file allocation: ");
-		if ((freeFrames - sys_calculate_free_frames()) != 1) panic("Wrong allocation: ");
+		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  0) panic("Wrong page file allocation: ");
+		if ((freeFrames - sys_calculate_free_frames()) != 0) panic("Wrong allocation: ");
 
 		//Allocate Shared 2 MB
 		freeFrames = sys_calculate_free_frames() ;
@@ -93,8 +93,8 @@ void _main(void)
 		ptr_allocations[6] = malloc(3*Mega-kilo);
 		if ((uint32) ptr_allocations[6] != (USER_HEAP_START + 8*Mega)) panic("Wrong start address for the allocated space... ");
 		//if ((freeFrames - sys_calculate_free_frames()) != 768 + 1) panic("Wrong allocation: ");
-		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  768) panic("Wrong page file allocation: ");
-		if ((freeFrames - sys_calculate_free_frames()) != 1) panic("Wrong allocation: ");
+		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  0) panic("Wrong page file allocation: ");
+		if ((freeFrames - sys_calculate_free_frames()) != 0) panic("Wrong allocation: ");
 
 		//Allocate Shared 3 MB
 		freeFrames = sys_calculate_free_frames() ;
@@ -112,7 +112,7 @@ void _main(void)
 		usedDiskPages = sys_pf_calculate_allocated_pages();
 		free(ptr_allocations[1]);
 		//if ((sys_calculate_free_frames() - freeFrames) != 256) panic("Wrong free: ");
-		if( (usedDiskPages - sys_pf_calculate_allocated_pages()) !=  256) panic("Wrong page file free: ");
+		if( (usedDiskPages - sys_pf_calculate_allocated_pages()) !=  0) panic("Wrong page file free: ");
 		if ((sys_calculate_free_frames() - freeFrames) != 0) panic("Wrong free: ");
 
 		//2 MB Hole
@@ -120,7 +120,7 @@ void _main(void)
 		usedDiskPages = sys_pf_calculate_allocated_pages();
 		free(ptr_allocations[4]);
 		//if ((sys_calculate_free_frames() - freeFrames) != 512) panic("Wrong free: ");
-		if( (usedDiskPages - sys_pf_calculate_allocated_pages()) !=  512) panic("Wrong page file free: ");
+		if( (usedDiskPages - sys_pf_calculate_allocated_pages()) !=  0) panic("Wrong page file free: ");
 		if ((sys_calculate_free_frames() - freeFrames) != 0) panic("Wrong free: ");
 
 		//3 MB Hole
@@ -128,7 +128,7 @@ void _main(void)
 		usedDiskPages = sys_pf_calculate_allocated_pages();
 		free(ptr_allocations[6]);
 		//if ((sys_calculate_free_frames() - freeFrames) != 768) panic("Wrong free: ");
-		if( (usedDiskPages - sys_pf_calculate_allocated_pages()) !=  768) panic("Wrong page file free: ");
+		if( (usedDiskPages - sys_pf_calculate_allocated_pages()) !=  0) panic("Wrong page file free: ");
 		if ((sys_calculate_free_frames() - freeFrames) != 0) panic("Wrong free: ");
 	}
 
@@ -140,7 +140,7 @@ void _main(void)
 		ptr_allocations[8] = malloc(512*kilo - kilo);
 		if ((uint32) ptr_allocations[8] != (USER_HEAP_START + 1*Mega)) panic("Wrong start address for the allocated space... ");
 		//if ((freeFrames - sys_calculate_free_frames()) != 128) panic("Wrong allocation: ");
-		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  128) panic("Wrong page file allocation: ");
+		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  0) panic("Wrong page file allocation: ");
 		if ((freeFrames - sys_calculate_free_frames()) != 0) panic("Wrong allocation: ");
 
 		//Allocate 1 MB - should be placed in 2nd hole
@@ -149,17 +149,17 @@ void _main(void)
 		ptr_allocations[9] = malloc(1*Mega - kilo);
 		if ((uint32) ptr_allocations[9] != (USER_HEAP_START + 4*Mega)) panic("Wrong start address for the allocated space... ");
 		//if ((freeFrames - sys_calculate_free_frames()) != 256) panic("Wrong allocation: ");
-		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  256) panic("Wrong page file allocation: ");
+		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  0) panic("Wrong page file allocation: ");
 		if ((freeFrames - sys_calculate_free_frames()) != 0) panic("Wrong allocation: ");
 
-		//Allocate 256 KB - should be placed in remaining of 1st hole
+		//Allocate Shared 256 KB - should be placed in remaining of 1st hole
 		freeFrames = sys_calculate_free_frames() ;
 		usedDiskPages = sys_pf_calculate_allocated_pages();
-		ptr_allocations[10] = malloc(256*kilo - kilo);
+		//ptr_allocations[10] = malloc(256*kilo - kilo);
+		ptr_allocations[10] = smalloc("a", 256*kilo - kilo, 0);
 		if ((uint32) ptr_allocations[10] != (USER_HEAP_START + 1*Mega + 512*kilo)) panic("Wrong start address for the allocated space... ");
-		//if ((freeFrames - sys_calculate_free_frames()) != 64) panic("Wrong allocation: ");
-		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  64) panic("Wrong page file allocation: ");
-		if ((freeFrames - sys_calculate_free_frames()) != 0) panic("Wrong allocation: ");
+		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  0) panic("Wrong page file allocation: ");
+		if ((freeFrames - sys_calculate_free_frames()) != 64+0+2) panic("Wrong allocation: %d", (freeFrames - sys_calculate_free_frames()));
 
 		//Allocate 2 MB - should be placed in 3rd hole
 		freeFrames = sys_calculate_free_frames() ;
@@ -167,17 +167,18 @@ void _main(void)
 		ptr_allocations[11] = malloc(2*Mega);
 		if ((uint32) ptr_allocations[11] != (USER_HEAP_START + 8*Mega)) panic("Wrong start address for the allocated space... ");
 		//if ((freeFrames - sys_calculate_free_frames()) != 256) panic("Wrong allocation: ");
-		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  512) panic("Wrong page file allocation: ");
+		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  0) panic("Wrong page file allocation: ");
 		if ((freeFrames - sys_calculate_free_frames()) != 0) panic("Wrong allocation: ");
 
 		//Allocate 4 MB - should be placed in end of all allocations
 		freeFrames = sys_calculate_free_frames() ;
 		usedDiskPages = sys_pf_calculate_allocated_pages();
-		ptr_allocations[12] = malloc(4*Mega - kilo);
+		//ptr_allocations[12] = malloc(4*Mega - kilo);
+		ptr_allocations[12] = smalloc("b", 4*Mega - kilo, 0);
 		if ((uint32) ptr_allocations[12] != (USER_HEAP_START + 14*Mega) ) panic("Wrong start address for the allocated space... ");
-		//if ((freeFrames - sys_calculate_free_frames()) != 1024 + 1) panic("Wrong allocation: ");
-		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  1024) panic("Wrong page file allocation: ");
-		if ((freeFrames - sys_calculate_free_frames()) != 2) panic("Wrong allocation: ");
+		if ((freeFrames - sys_calculate_free_frames()) != 1024+1+2) panic("Wrong allocation: ");
+		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  0) panic("Wrong page file allocation: ");
+//		if ((freeFrames - sys_calculate_free_frames()) != 2) panic("Wrong allocation: ");
 	}
 
 	//[4] Free contiguous allocations
@@ -187,7 +188,7 @@ void _main(void)
 		usedDiskPages = sys_pf_calculate_allocated_pages();
 		free(ptr_allocations[2]);
 		//if ((sys_calculate_free_frames() - freeFrames) != 256) panic("Wrong free: ");
-		if( (usedDiskPages - sys_pf_calculate_allocated_pages()) !=  256) panic("Wrong page file free: ");
+		if( (usedDiskPages - sys_pf_calculate_allocated_pages()) !=  0) panic("Wrong page file free: ");
 		if ((sys_calculate_free_frames() - freeFrames) != 0) panic("Wrong free: ");
 
 		//1 MB Hole appended to next 1 MB hole
@@ -195,7 +196,7 @@ void _main(void)
 		usedDiskPages = sys_pf_calculate_allocated_pages();
 		free(ptr_allocations[9]);
 		//if ((sys_calculate_free_frames() - freeFrames) != 256) panic("Wrong free: ");
-		if( (usedDiskPages - sys_pf_calculate_allocated_pages()) !=  256) panic("Wrong page file free: ");
+		if( (usedDiskPages - sys_pf_calculate_allocated_pages()) !=  0) panic("Wrong page file free: ");
 		if ((sys_calculate_free_frames() - freeFrames) != 0) panic("Wrong free: ");
 
 		//1 MB Hole appended to previous 1 MB + 256 KB hole and next 2 MB hole
@@ -203,7 +204,7 @@ void _main(void)
 		usedDiskPages = sys_pf_calculate_allocated_pages();
 		free(ptr_allocations[3]);
 		//if ((sys_calculate_free_frames() - freeFrames) != 256) panic("Wrong free: ");
-		if( (usedDiskPages - sys_pf_calculate_allocated_pages()) !=  256) panic("Wrong page file free: ");
+		if( (usedDiskPages - sys_pf_calculate_allocated_pages()) !=  0) panic("Wrong page file free: ");
 		if ((sys_calculate_free_frames() - freeFrames) != 0) panic("Wrong free: ");
 	}
 
@@ -216,7 +217,7 @@ void _main(void)
 		ptr_allocations[13] = malloc(1*Mega + 256*kilo - kilo);
 		if ((uint32) ptr_allocations[13] != (USER_HEAP_START + 1*Mega + 768*kilo)) panic("Wrong start address for the allocated space... ");
 		//if ((freeFrames - sys_calculate_free_frames()) != 512+32) panic("Wrong allocation: ");
-		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  256+64) panic("Wrong page file allocation: ");
+		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  0) panic("Wrong page file allocation: ");
 		if ((freeFrames - sys_calculate_free_frames()) != 0) panic("Wrong allocation: ");
 
 		//Allocate Shared 4 MB [should be placed at the end of all allocations
@@ -224,7 +225,7 @@ void _main(void)
 		usedDiskPages = sys_pf_calculate_allocated_pages();
 		ptr_allocations[14] = smalloc("w", 4*Mega, 0);
 		if (ptr_allocations[14] != (uint32*)(USER_HEAP_START + 18*Mega)) panic("Returned address is not correct. check the setting of it and/or the updating of the shared_mem_free_address");
-		if ((freeFrames - sys_calculate_free_frames()) !=  1024+2+2) panic("Wrong allocation: make sure that you allocate the required space in the user environment and add its frames to frames_storage");
+		if ((freeFrames - sys_calculate_free_frames()) !=  1024+1+2) panic("Wrong allocation: make sure that you allocate the required space in the user environment and add its frames to frames_storage");
 		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  0) panic("Wrong page file allocation: ");
 
 		//Get shared of 3 MB [should be placed in the remaining part of the contiguous (256 KB + 4 MB) hole

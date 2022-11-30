@@ -25,10 +25,10 @@ void _main(void)
 		for (i = 0 ; i < PAGE_SIZE*10 ; i+=PAGE_SIZE/2)
 			if( arr[i] != -1) panic("modified stack page(s) not restored correctly");
 
-		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  9) panic("Unexpected extra/less pages have been added to page file");
+		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  10) panic("Unexpected extra/less pages have been added to page file");
 
 		if( (freePages - (sys_calculate_free_frames() + sys_calculate_modified_frames())) != 0 ) panic("Extra memory are wrongly allocated... It's REplacement: expected that no extra frames are allocated");
-	}
+	}//consider tables of PF, disk pages
 
 	cprintf("Congratulations: stack pages created, modified and read successfully!\n\n");
 

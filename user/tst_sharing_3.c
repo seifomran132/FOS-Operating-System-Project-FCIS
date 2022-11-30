@@ -17,6 +17,10 @@ _main(void)
 		}
 		if (fullWS) panic("Please increase the WS size");
 	}
+	/*Dummy malloc to enforce the UHEAP initializations*/
+	malloc(0);
+	/*=================================================*/
+
 	cprintf("************************************************\n");
 	cprintf("MAKE SURE to have a FRESH RUN for this test\n(i.e. don't run any program/test before it)\n");
 	cprintf("************************************************\n\n\n");
@@ -54,7 +58,11 @@ _main(void)
 			if (z == NULL) panic("WRONG... supposed no problem in creation here!!");
 		}
 		z = smalloc("outOfBounds", 1, 1);
-		if (z != NULL) panic("Trying to create a shared object that exceed the number of ALLOWED OBJECTS and the corresponding error is not returned!!");
+		uint32 maxShares_after = sys_getMaxShares();
+		//if krealloc is NOT invoked to double the size of max shares
+		if ((maxShares_after == maxShares) && (z != NULL)) panic("Trying to create a shared object that exceed the number of ALLOWED OBJECTS and the corresponding error is not returned!!");
+		//else
+		if ((maxShares_after == 2*maxShares) && (z == NULL)) panic("Trying to create a shared object that exceed the number of ALLOWED OBJECTS, krealloc should be invoked to double the size of shares array!!");
 	}
 	cprintf("Congratulations!! Test of Shared Variables [Create: Special Cases] completed successfully!!\n\n\n");
 

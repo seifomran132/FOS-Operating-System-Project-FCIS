@@ -64,7 +64,8 @@ int allocate_share_object(struct Share **allocatedObject)
 
 	if (sharedObjectID == -1)
 	{
-		//try to increase double the size of the "shares" array
+		return E_NO_SHARE ;
+/*		//try to increase double the size of the "shares" array
 #if USE_KHEAP
 		{
 			shares = krealloc(shares, 2*MAX_SHARES);
@@ -86,6 +87,7 @@ int allocate_share_object(struct Share **allocatedObject)
 			return E_NO_SHARE;
 		}
 #endif
+*/
 	}
 
 	*allocatedObject = &(shares[sharedObjectID]);
@@ -93,11 +95,7 @@ int allocate_share_object(struct Share **allocatedObject)
 
 #if USE_KHEAP
 	{
-		shares[sharedObjectID].framesStorage = kmalloc(PAGE_SIZE);
-		if (shares[sharedObjectID].framesStorage == NULL)
-		{
-			panic("Kernel runs out of memory\nCan't create the framesStorage.");
-		}
+		shares[sharedObjectID].framesStorage = create_frames_storage();
 	}
 #endif
 	memset(shares[sharedObjectID].framesStorage, 0, PAGE_SIZE);
@@ -154,9 +152,7 @@ int free_share_object(uint32 sharedObjectID)
 	return 0;
 }
 
-//=============================================================
 // 2014 - edited in 2017
-//=============================================================
 //===========================
 // [5] Create frames_storage:
 //===========================
@@ -232,6 +228,31 @@ inline void clear_frames_storage(uint32* frames_storage)
 		}
 	}
 }
+
+
+//==============================
+// [9] Get Size of Share Object:
+//==============================
+int getSizeOfSharedObject(int32 ownerID, char* shareName)
+{
+	// your code is here, remove the panic and write your code
+	//panic("getSizeOfSharedObject() is not implemented yet...!!");
+
+	// This function should return the size of the given shared object
+	// RETURN:
+	//	a) If found, return size of shared object
+	//	b) Else, return E_SHARED_MEM_NOT_EXISTS
+	//
+
+	int shareObjectID = get_share_object_ID(ownerID, shareName);
+	if (shareObjectID == E_SHARED_MEM_NOT_EXISTS)
+		return E_SHARED_MEM_NOT_EXISTS;
+	else
+		return shares[shareObjectID].size;
+
+	return 0;
+}
+
 //********************************************************************************//
 
 //===========================================================
@@ -246,6 +267,7 @@ inline void clear_frames_storage(uint32* frames_storage)
 //=========================
 int createSharedObject(int32 ownerID, char* shareName, uint32 size, uint8 isWritable, void* virtual_address)
 {
+	//TODO: [PROJECT MS3] [SHARING - KERNEL SIDE] createSharedObject()
 	// your code is here, remove the panic and write your code
 	panic("createSharedObject() is not implemented yet...!!");
 
@@ -259,26 +281,12 @@ int createSharedObject(int32 ownerID, char* shareName, uint32 size, uint8 isWrit
 	//	c) E_NO_SHARE if the number of shared objects reaches max "MAX_SHARES"
 }
 
-//==============================
-// [2] Get Size of Share Object:
-//==============================
-int getSizeOfSharedObject(int32 ownerID, char* shareName)
-{
-	// your code is here, remove the panic and write your code
-	panic("getSizeOfSharedObject() is not implemented yet...!!");
-
-	// This function should return the size of the given shared object
-	// RETURN:
-	//	a) If found, return size of shared object
-	//	b) Else, return E_SHARED_MEM_NOT_EXISTS
-	//
-}
-
 //======================
-// [3] Get Share Object:
+// [2] Get Share Object:
 //======================
 int getSharedObject(int32 ownerID, char* shareName, void* virtual_address)
 {
+	//TODO: [PROJECT MS3] [SHARING - KERNEL SIDE] getSharedObject()
 	// your code is here, remove the panic and write your code
 	panic("getSharedObject() is not implemented yet...!!");
 
@@ -301,10 +309,11 @@ int getSharedObject(int32 ownerID, char* shareName, void* virtual_address)
 //===================
 int freeSharedObject(int32 sharedObjectID, void *startVA)
 {
-	struct Env* myenv = curenv; //The calling environment
-
+	//TODO: [PROJECT MS3 - BONUS] [SHARING - KERNEL SIDE] freeSharedObject()
 	// your code is here, remove the panic and write your code
 	panic("freeSharedObject() is not implemented yet...!!");
+
+	struct Env* myenv = curenv; //The calling environment
 
 	// This function should free (delete) the shared object from the User Heapof the current environment
 	// If this is the last shared env, then the "frames_store" should be cleared and the shared object should be deleted
@@ -312,4 +321,11 @@ int freeSharedObject(int32 sharedObjectID, void *startVA)
 	//	a) 0 if success
 	//	b) E_SHARED_MEM_NOT_EXISTS if the shared object is not exists
 
+	// Steps:
+	//	1) Get the shared object from the "shares" array (use get_share_object_ID())
+	//	2) Unmap it from the current environment "myenv"
+	//	3) If one or more table becomes empty, remove it
+	//	4) Update references
+	//	5) If this is the last share, delete the share object (use free_share_object())
+	//	6) Flush the cache "tlbflush()"
 }

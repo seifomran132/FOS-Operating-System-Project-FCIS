@@ -17,13 +17,16 @@ _main(void)
 		}
 		if (fullWS) panic("Please increase the WS size");
 	}
+	/*Dummy malloc to enforce the UHEAP initializations*/
+	malloc(0);
+	/*=================================================*/
 
 	cprintf("************************************************\n");
 	cprintf("MAKE SURE to have a FRESH RUN for this test\n(i.e. don't run any program/test before it)\n");
 	cprintf("************************************************\n\n\n");
 
 	int envID = sys_getenvid();
-
+	int expected = 0;
 	cprintf("STEP A: checking free of shared object using 2 environments... \n");
 	{
 		uint32 *x;
@@ -46,12 +49,14 @@ _main(void)
 		env_sleep(3000);
 
 		//to ensure that the slave environments completed successfully
-		if (gettst()!=2) panic("test failed");
+		while (gettst()!=2) ;// panic("test failed");
 
+		freeFrames = sys_calculate_free_frames() ;
 		sfree(x);
 		cprintf("Master env removed x (1 page) \n");
 		int diff = (sys_calculate_free_frames() - freeFrames);
-		if ( diff !=  0) panic("Wrong free: revise your freeSharedObject logic\n");
+		expected = (1+1) + (1+1);
+		if ( diff !=  expected) panic("Wrong free (diff=%d, expected=%d): revise your freeSharedObject logic\n", diff, expected);
 	}
 	cprintf("Step A completed successfully!!\n\n\n");
 
@@ -72,7 +77,13 @@ _main(void)
 		sys_run_env(envIdSlaveB1);
 		sys_run_env(envIdSlaveB2);
 
-		env_sleep(4000); //give slaves time to catch the shared object before removal
+		//give slaves time to catch the shared object before removal
+		{
+//			env_sleep(4000);
+			while (gettst()!=2) ;
+		}
+
+		rsttst();
 
 		int freeFrames = sys_calculate_free_frames() ;
 
@@ -83,8 +94,8 @@ _main(void)
 		cprintf("Master env removed x\n");
 
 		int diff = (sys_calculate_free_frames() - freeFrames);
-
-		if (diff !=  1) panic("Wrong free: frames removed not equal 1 !, correct frames to be removed are 1:\nfrom the env: 1 table\nframes_storage of z & x: should NOT cleared yet (still in use!)\n");
+		expected = 1;
+		if (diff !=  expected) panic("Wrong free: frames removed not equal 1 !, correct frames to be removed are 1:\nfrom the env: 1 table\nframes_storage of z & x: should NOT cleared yet (still in use!)\n");
 
 		//To indicate that it's completed successfully
 		inctst();

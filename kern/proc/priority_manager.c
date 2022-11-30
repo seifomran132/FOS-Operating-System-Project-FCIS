@@ -8,7 +8,7 @@
 
 void set_program_priority(struct Env* env, int priority)
 {
-	//TODO: [PROJECT MS3 - BONUS] [PROGRAM PRIORITY] set_program_priority
+	//[PROGRAM PRIORITY] set_program_priority
 	//[ALREADY IMPLEMENTED]
 
 	if(priority < 1 || priority > 5)

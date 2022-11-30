@@ -148,7 +148,7 @@ int allocate_frame(struct FrameInfo **ptr_frame_info)
 	int c = 0;
 	if (*ptr_frame_info == NULL)
 	{
-		//TODO: [PROJECT MS3] [KERNEL MEM] Free RAM when it's FULL
+		//[KERNEL MEM] Free RAM when it's FULL
 		// Write your code here, remove the panic and write your code
 		panic("ERROR: Kernel run out of memory... allocate_frame cannot find a free frame.\n");
 	}

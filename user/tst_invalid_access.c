@@ -15,7 +15,7 @@ void _main(void)
 	{
 		uint32 size = 4*kilo;
 
-		unsigned char *x = (unsigned char *)0x80000000;
+		unsigned char *x = (unsigned char *)(0x00200000-PAGE_SIZE);
 
 		int i=0;
 		for(;i< size+20;i++)

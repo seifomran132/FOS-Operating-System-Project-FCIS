@@ -245,6 +245,8 @@ static void trap_dispatch(struct Trapframe *tf)
 		}
 		else {
 			//env_destroy(curenv);
+			panic("unhandled trap in user program");
+
 			return;
 		}
 	}
@@ -302,7 +304,9 @@ void trap(struct Trapframe *tf)
 	}
 }
 
-
+/*2022*/
+uint32 last_fault_va = 0;
+int8 num_repeated_fault  = 0;
 void fault_handler(struct Trapframe *tf)
 {
 	int userTrap = 0;
@@ -314,7 +318,20 @@ void fault_handler(struct Trapframe *tf)
 
 	// Read processor's CR2 register to find the faulting address
 	fault_va = rcr2();
-
+	/******************************************************/
+	/*2022*///If same fault va for 3 times, then panic
+	if (last_fault_va == fault_va)
+	{
+		num_repeated_fault++ ;
+		if (num_repeated_fault == 3)
+			panic("Failed to handle fault at va=%x: same va is faulted for 3 successive times\n", fault_va);
+	}
+	else
+	{
+		num_repeated_fault = 0;
+	}
+	last_fault_va = fault_va ;
+	/******************************************************/
 	//2017: Check stack overflow for Kernel
 	if (!userTrap)
 	{
@@ -333,7 +350,7 @@ void fault_handler(struct Trapframe *tf)
 
 	//check the faulted address, is it a table or not ?
 	//If the directory entry of the faulted address is NOT PRESENT then
-	if ( (curenv->env_page_directory[PDX(fault_va)] & PERM_PRESENT) != PERM_PRESENT)
+	if ( (faulted_env->env_page_directory[PDX(fault_va)] & PERM_PRESENT) != PERM_PRESENT)
 	{
 		// we have a table fault =============================================================
 		//cprintf("[%s] user TABLE fault va %08x\n", curenv->prog_name, fault_va);
@@ -343,6 +360,13 @@ void fault_handler(struct Trapframe *tf)
 	}
 	else
 	{
+		/*2022: Check if fault due to Access Rights */
+		int perms = pt_get_page_permissions(faulted_env->env_page_directory, fault_va);
+		if (perms & PERM_PRESENT)
+			panic("Page @va=%x is exist! page fault due to violation of ACCESS RIGHTS\n", fault_va) ;
+		/*============================================================================================*/
+
+
 		// we have normal page fault =============================================================
 		faulted_env->pageFaultsCounter ++ ;
 

@@ -42,6 +42,7 @@ int queue_size(struct Env_Queue* queue)
 
 void enqueue(struct Env_Queue* queue, struct Env* env)
 {
+	assert(queue != NULL)	;
 	if(env != NULL)
 	{
 		LIST_INSERT_HEAD(queue, env);
@@ -50,6 +51,7 @@ void enqueue(struct Env_Queue* queue, struct Env* env)
 
 struct Env* dequeue(struct Env_Queue* queue)
 {
+	if (queue == NULL) return NULL;
 	struct Env* envItem = LIST_LAST(queue);
 	if (envItem != NULL)
 	{
@@ -60,6 +62,8 @@ struct Env* dequeue(struct Env_Queue* queue)
 
 void remove_from_queue(struct Env_Queue* queue, struct Env* e)
 {
+	assert(queue != NULL)	;
+
 	if (e != NULL)
 	{
 		LIST_REMOVE(queue, e);
@@ -68,6 +72,8 @@ void remove_from_queue(struct Env_Queue* queue, struct Env* e)
 
 struct Env* find_env_in_queue(struct Env_Queue* queue, uint32 envID)
 {
+	if (queue == NULL) return NULL;
+
 	struct Env * ptr_env=NULL;
 	LIST_FOREACH(ptr_env, queue)
 	{
@@ -169,8 +175,7 @@ fos_scheduler(void)
 
 void sched_init_RR(uint8 quantum)
 {
-	scheduler_status = SCH_STOPPED;
-	scheduler_method = SCH_RR;
+
 
 	// Create 1 ready queue for the RR
 	num_of_ready_queues = 1;
@@ -182,6 +187,13 @@ void sched_init_RR(uint8 quantum)
 	quantums[0] = quantum;
 	kclock_set_quantum(quantums[0]);
 	init_queue(&(env_ready_queues[0]));
+
+	//=========================================
+	//DON'T CHANGE THESE LINES=================
+	scheduler_status = SCH_STOPPED;
+	scheduler_method = SCH_RR;
+	//=========================================
+	//=========================================
 }
 
 void sched_init_MLFQ(uint8 numOfLevels, uint8 *quantumOfEachLevel)
@@ -190,8 +202,7 @@ void sched_init_MLFQ(uint8 numOfLevels, uint8 *quantumOfEachLevel)
 	//=========================================
 	//DON'T CHANGE THESE LINES=================
 	sched_delete_ready_queues();
-	scheduler_status = SCH_STOPPED;
-	scheduler_method = SCH_MLFQ;
+
 	//=========================================
 	//=========================================
 	// your code is here, remove the panic and write your code
@@ -203,6 +214,14 @@ void sched_init_MLFQ(uint8 numOfLevels, uint8 *quantumOfEachLevel)
 #else
 	panic("sched_init_MLFQ: Kernel Heap is disabled");
 #endif
+
+	//=========================================
+	//DON'T CHANGE THESE LINES=================
+	scheduler_status = SCH_STOPPED;
+	scheduler_method = SCH_MLFQ;
+	//=========================================
+	//=========================================
+
 }
 
 
@@ -214,14 +233,17 @@ void sched_init()
 
 	init_queue(&env_new_queue);
 	init_queue(&env_exit_queue);
+	scheduler_status = SCH_STOPPED;
 }
 
 void sched_delete_ready_queues()
 {
+#if USE_KHEAP
 	if (env_ready_queues != NULL)
 		kfree(env_ready_queues);
 	if (quantums != NULL)
-	kfree(quantums);
+		kfree(quantums);
+#endif
 }
 void sched_insert_ready(struct Env* env)
 {

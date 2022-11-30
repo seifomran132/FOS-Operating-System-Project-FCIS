@@ -44,9 +44,9 @@ void _main(void)
 		int NumOfElements = strtol(Line, NULL, 10) ;
 
 		int *Elements = malloc(sizeof(int) * NumOfElements) ;
-
+		uint32 num_disk_tables = 1;  //Since it is created with the first array, so it will be decremented in the 1st case only
 		int numOFEmptyLocInWS = CheckAndCountEmptyLocInWS(myEnv);
-		int InitFreeFrames = sys_calculate_free_frames() + sys_calculate_modified_frames() - numOFEmptyLocInWS ;
+		int InitFreeFrames = sys_calculate_free_frames() + sys_calculate_modified_frames() - numOFEmptyLocInWS;
 
 		Elements[NumOfElements] = 10 ;
 		//		cprintf("Free Frames After Allocation = %d\n", sys_calculate_free_frames()) ;
@@ -101,6 +101,7 @@ void _main(void)
 		///Testing the freeHeap according to the specified scenario
 		if (Iteration == 1)
 		{
+			InitFreeFrames -= num_disk_tables;
 			if (!(NumOfElements == 1000 && Chose == 'a'))
 				panic("Please ensure the number of elements and the initialization method of this test");
 

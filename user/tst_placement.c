@@ -8,13 +8,9 @@ void _main(void)
 {
 
 	//	cprintf("envID = %d\n",envID);
+
 	char arr[PAGE_SIZE*1024*4];
 
-	uint32 actual_active_list[2] = {0x1,0x2};
-	uint32 actual_second_list[3] = {0x3,0x4, 0x5};
-	int check = sys_check_LRU_lists(actual_active_list, actual_second_list, 2, 3);
-	if(check == 0)
-		panic("LRU lists entries are not correct, check your logic again!!");
 	//("STEP 0: checking Initial WS entries ...\n");
 	{
 		if( ROUNDDOWN(myEnv->__uptr_pws[0].virtual_address,PAGE_SIZE) !=   0x200000)  	panic("INITIAL PAGE WS entry checking failed! Review size of the WS..!!");
@@ -24,13 +20,14 @@ void _main(void)
 		if( ROUNDDOWN(myEnv->__uptr_pws[4].virtual_address,PAGE_SIZE) !=   0x204000)  panic("INITIAL PAGE WS entry checking failed! Review size of the WS..!!");
 		if( ROUNDDOWN(myEnv->__uptr_pws[5].virtual_address,PAGE_SIZE) !=   0x205000)  panic("INITIAL PAGE WS entry checking failed! Review size of the WS..!!");
 		if( ROUNDDOWN(myEnv->__uptr_pws[6].virtual_address,PAGE_SIZE) !=   0x206000)  panic("INITIAL PAGE WS entry checking failed! Review size of the WS..!!");
-		if( ROUNDDOWN(myEnv->__uptr_pws[7].virtual_address,PAGE_SIZE) !=   0x800000)  panic("INITIAL PAGE WS entry checking failed! Review size of the WS..!!");
-		if( ROUNDDOWN(myEnv->__uptr_pws[8].virtual_address,PAGE_SIZE) !=   0x801000)  panic("INITIAL PAGE WS entry checking failed! Review size of the WS..!!");
-		if( ROUNDDOWN(myEnv->__uptr_pws[9].virtual_address,PAGE_SIZE) !=   0x802000)  panic("INITIAL PAGE WS entry checking failed! Review size of the WS..!!");
-		if( ROUNDDOWN(myEnv->__uptr_pws[10].virtual_address,PAGE_SIZE) !=   0x803000)  panic("INITIAL PAGE WS entry checking failed! Review size of the WS..!!");
-		if( ROUNDDOWN(myEnv->__uptr_pws[11].virtual_address,PAGE_SIZE) !=   0xeebfd000)  panic("INITIAL PAGE WS entry checking failed! Review size of the WS..!!");
+		if( ROUNDDOWN(myEnv->__uptr_pws[7].virtual_address,PAGE_SIZE) !=   0x207000)  panic("INITIAL PAGE WS entry checking failed! Review size of the WS..!!");
+		if( ROUNDDOWN(myEnv->__uptr_pws[8].virtual_address,PAGE_SIZE) !=   0x800000)  panic("INITIAL PAGE WS entry checking failed! Review size of the WS..!!");
+		if( ROUNDDOWN(myEnv->__uptr_pws[9].virtual_address,PAGE_SIZE) !=   0x801000)  panic("INITIAL PAGE WS entry checking failed! Review size of the WS..!!");
+		if( ROUNDDOWN(myEnv->__uptr_pws[10].virtual_address,PAGE_SIZE) !=   0x802000)  panic("INITIAL PAGE WS entry checking failed! Review size of the WS..!!");
+		if( ROUNDDOWN(myEnv->__uptr_pws[11].virtual_address,PAGE_SIZE) !=   0x803000)  panic("INITIAL PAGE WS entry checking failed! Review size of the WS..!!");
+		if( ROUNDDOWN(myEnv->__uptr_pws[12].virtual_address,PAGE_SIZE) !=   0xeebfd000)  panic("INITIAL PAGE WS entry checking failed! Review size of the WS..!!");
 
-		for (int k = 12; k < 20; k++)
+		for (int k = 13; k < 20; k++)
 			if( myEnv->__uptr_pws[k].empty !=  1)
 				panic("INITIAL PAGE WS entry checking failed! Review size of the WS..!!");
 
@@ -41,7 +38,6 @@ void _main(void)
 
 	int usedDiskPages = sys_pf_calculate_allocated_pages() ;
 	int freePages = sys_calculate_free_frames();
-
 	int i=0;
 	for(;i<=PAGE_SIZE;i++)
 	{
@@ -60,8 +56,6 @@ void _main(void)
 		arr[i] = -1;
 	}
 
-
-
 	cprintf("STEP A: checking PLACEMENT fault handling ... \n");
 	{
 		if( arr[0] !=  -1)  panic("PLACEMENT of stack page failed");
@@ -74,14 +68,14 @@ void _main(void)
 		if( arr[PAGE_SIZE*1024*2 + PAGE_SIZE] !=  -1)  panic("PLACEMENT of stack page failed");
 
 
-		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  5) panic("new stack pages are not written to Page File");
+		if( (sys_pf_calculate_allocated_pages() - usedDiskPages) !=  0) panic("new stack pages are not written to Page File");
 
-		if( (freePages - sys_calculate_free_frames() ) != 9 ) panic("allocated memory size incorrect");
+		if( (freePages - sys_calculate_free_frames() ) != 7 ) panic("allocated memory size incorrect");
 	}
 	cprintf("STEP A passed: PLACEMENT fault handling works!\n\n\n");
 
 
-	uint32 expectedPages[20] = {0x200000,0x201000,0x202000,0x203000,0x204000,0x205000,0x206000,0x800000,0x801000,0x802000,0x803000,0xeebfd000,0xedbfd000,0xedbfe000,0xedffd000,0xedffe000,0xee3fd000,0xee3fe000, 0, 0};
+	uint32 expectedPages[20] = {0x200000,0x201000,0x202000,0x203000,0x204000,0x205000,0x206000,0x207000,0x800000,0x801000,0x802000,0x803000,0xeebfd000,0xedbfd000,0xedbfe000,0xedffd000,0xedffe000,0xee3fd000,0xee3fe000,0};
 
 	cprintf("STEP B: checking WS entries ...\n");
 	{
@@ -103,37 +97,37 @@ void _main(void)
 	//		if( ROUNDDOWN(myEnv->__uptr_pws[15].virtual_address,PAGE_SIZE) !=  0xedffe000)  panic("PAGE WS entry checking failed... trace it by printing page WS before & after fault");
 	//		if( ROUNDDOWN(myEnv->__uptr_pws[16].virtual_address,PAGE_SIZE) !=  0xee3fd000)  panic("PAGE WS entry checking failed... trace it by printing page WS before & after fault");
 	//		if( ROUNDDOWN(myEnv->__uptr_pws[17].virtual_address,PAGE_SIZE) !=  0xee3fe000)  panic("PAGE WS entry checking failed... trace it by printing page WS before & after fault");
-}
-cprintf("STEP B passed: WS entries test are correct\n\n\n");
-
-cprintf("STEP C: checking working sets WHEN BECOMES FULL...\n");
-{
-	/*NO NEED FOR THIS AS WE WORK ON "LRU"*/
-	//if(myEnv->page_last_WS_index != 18) panic("wrong PAGE WS pointer location... trace it by printing page WS before & after fault");
-
-	i=PAGE_SIZE*1024*3;
-	for(;i<=(PAGE_SIZE*1024*3+PAGE_SIZE);i++)
-	{
-		arr[i] = -1;
 	}
+	cprintf("STEP B passed: WS entries test are correct\n\n\n");
 
-	if( arr[PAGE_SIZE*1024*3] !=  -1)  panic("PLACEMENT of stack page failed");
-	if( arr[PAGE_SIZE*1024*3 + PAGE_SIZE] !=  -1)  panic("PLACEMENT of stack page failed");
+	cprintf("STEP C: checking working sets WHEN BECOMES FULL...\n");
+	{
+		/*NO NEED FOR THIS AS WE WORK ON "LRU"*/
+		//if(myEnv->page_last_WS_index != 18) panic("wrong PAGE WS pointer location... trace it by printing page WS before & after fault");
 
-	expectedPages[18] = 0xee7fd000;
-	expectedPages[19] = 0xee7fe000;
+		i=PAGE_SIZE*1024*3;
+		for(;i<=(PAGE_SIZE*1024*3+PAGE_SIZE);i++)
+		{
+			arr[i] = -1;
+		}
 
-	CheckWSWithoutLastIndex(expectedPages, 20);
+		if( arr[PAGE_SIZE*1024*3] !=  -1)  panic("PLACEMENT of stack page failed");
+		if( arr[PAGE_SIZE*1024*3 + PAGE_SIZE] !=  -1)  panic("PLACEMENT of stack page failed");
 
-	//if( ROUNDDOWN(myEnv->__uptr_pws[19].virtual_address,PAGE_SIZE) !=  0xee7fe000)  panic("LAST PAGE WS entry checking failed");
+		//expectedPages[18] = 0xee7fd000;
+		expectedPages[19] = 0xee7fd000;
+		expectedPages[0] = 0xee7fe000;
+		CheckWSWithoutLastIndex(expectedPages, 20);
 
-	/*NO NEED FOR THIS AS WE WORK ON "LRU"*/
-	//if(myEnv->page_last_WS_index != 0) panic("wrong PAGE WS pointer location... trace it by printing page WS before & after fault");
+		//if( ROUNDDOWN(myEnv->__uptr_pws[19].virtual_address,PAGE_SIZE) !=  0xee7fe000)  panic("LAST PAGE WS entry checking failed");
 
-}
-cprintf("STEP C passed: WS is FULL now\n\n\n");
+		/*NO NEED FOR THIS AS WE WORK ON "LRU"*/
+		//if(myEnv->page_last_WS_index != 0) panic("wrong PAGE WS pointer location... trace it by printing page WS before & after fault");
 
-cprintf("Congratulations!! Test of PAGE PLACEMENT completed successfully!!\n\n\n");
-return;
+	}
+	cprintf("STEP C passed: WS is FULL now\n\n\n");
+
+	cprintf("Congratulations!! Test of PAGE PLACEMENT completed successfully!!\n\n\n");
+	return;
 }
 

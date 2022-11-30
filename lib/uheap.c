@@ -1,6 +1,25 @@
 #include <inc/lib.h>
 
 //==================================================================================//
+//============================== GIVEN FUNCTIONS ===================================//
+//==================================================================================//
+
+int FirstTimeFlag = 1;
+void InitializeUHeap()
+{
+	if(FirstTimeFlag)
+	{
+		initialize_dyn_block_system();
+		cprintf("DYNAMIC BLOCK SYSTEM IS INITIALIZED\n");
+#if UHP_USE_BUDDY
+		initialize_buddy();
+		cprintf("BUDDY SYSTEM IS INITIALIZED\n");
+#endif
+		FirstTimeFlag = 0;
+	}
+}
+
+//==================================================================================//
 //============================ REQUIRED FUNCTIONS ==================================//
 //==================================================================================//
 
@@ -23,20 +42,12 @@ void initialize_dyn_block_system()
 //=================================
 // [2] ALLOCATE SPACE IN USER HEAP:
 //=================================
-int FirstTimeFlag = 1;
+
 void* malloc(uint32 size)
 {
 	//==============================================================
 	//DON'T CHANGE THIS CODE========================================
-	if(FirstTimeFlag)
-	{
-		initialize_dyn_block_system();
-#if UHP_USE_BUDDY
-		initialize_buddy();
-		cprintf("BUDDY SYSTEM IS INITIALIZED\n");
-#endif
-		FirstTimeFlag = 0;
-	}
+	InitializeUHeap();
 	if (size == 0) return NULL ;
 	//==============================================================
 	//==============================================================
@@ -46,12 +57,12 @@ void* malloc(uint32 size)
 	panic("malloc() is not implemented yet...!!");
 
 	// Steps:
-	//	1) Implement strategy to search the heap for suitable space
+	//	1) Implement FF strategy to search the heap for suitable space
 	//		to the required allocation size (space should be on 4 KB BOUNDARY)
 	//	2) if no suitable space found, return NULL
 	// 	3) Return pointer containing the virtual address of allocated space,
 	//
-	//Use sys_isUHeapPlacementStrategyNEXTFIT()... to check the current strategy
+	//Use sys_isUHeapPlacementStrategyFIRSTFIT()... to check the current strategy
 }
 
 //=================================
@@ -60,7 +71,7 @@ void* malloc(uint32 size)
 // free():
 //	This function frees the allocation of the given virtual_address
 //	To do this, we need to switch to the kernel, free the pages AND "EMPTY" PAGE TABLES
-//	from page file and main memory then switch back to the user again.
+//	FROM main memory AND free pages from page file then switch back to the user again.
 //
 //	We can use sys_free_user_mem(uint32 virtual_address, uint32 size); which
 //		switches to the kernel mode, calls free_user_mem() in
@@ -83,8 +94,29 @@ void free(void* virtual_address)
 //=================================
 void* smalloc(char *sharedVarName, uint32 size, uint8 isWritable)
 {
+	//==============================================================
+	//DON'T CHANGE THIS CODE========================================
+	InitializeUHeap();
+	if (size == 0) return NULL ;
+	//==============================================================
+
+	//TODO: [PROJECT MS3] [SHARING - USER SIDE] smalloc()
 	// Write your code here, remove the panic and write your code
 	panic("smalloc() is not implemented yet...!!");
+	// Steps:
+	//	1) Implement FIRST FIT strategy to search the heap for suitable space
+	//		to the required allocation size (space should be on 4 KB BOUNDARY)
+	//	2) if no suitable space found, return NULL
+	//	 Else,
+	//	3) Call sys_createSharedObject(...) to invoke the Kernel for allocation of shared variable
+	//		sys_createSharedObject(): if succeed, it returns the ID of the created variable. Else, it returns -ve
+	//	4) If the Kernel successfully creates the shared variable, return its virtual address
+	//	   Else, return NULL
+
+	//This function should find the space of the required range
+	// ******** ON 4KB BOUNDARY ******************* //
+
+	//Use sys_isUHeapPlacementStrategyFIRSTFIT() to check the current strategy
 }
 
 //========================================
@@ -92,8 +124,32 @@ void* smalloc(char *sharedVarName, uint32 size, uint8 isWritable)
 //========================================
 void* sget(int32 ownerEnvID, char *sharedVarName)
 {
+	//==============================================================
+	//DON'T CHANGE THIS CODE========================================
+	InitializeUHeap();
+	//==============================================================
+
+	//TODO: [PROJECT MS3] [SHARING - USER SIDE] sget()
 	// Write your code here, remove the panic and write your code
 	panic("sget() is not implemented yet...!!");
+
+	// Steps:
+	//	1) Get the size of the shared variable (use sys_getSizeOfSharedObject())
+	//	2) If not exists, return NULL
+	//	3) Implement FIRST FIT strategy to search the heap for suitable space
+	//		to share the variable (should be on 4 KB BOUNDARY)
+	//	4) if no suitable space found, return NULL
+	//	 Else,
+	//	5) Call sys_getSharedObject(...) to invoke the Kernel for sharing this variable
+	//		sys_getSharedObject(): if succeed, it returns the ID of the shared variable. Else, it returns -ve
+	//	6) If the Kernel successfully share the variable, return its virtual address
+	//	   Else, return NULL
+	//
+
+	//This function should find the space for sharing the variable
+	// ******** ON 4KB BOUNDARY ******************* //
+
+	//Use sys_isUHeapPlacementStrategyFIRSTFIT() to check the current strategy
 }
 
 
@@ -119,7 +175,11 @@ void* sget(int32 ownerEnvID, char *sharedVarName)
 //	the move_user_mem() function is empty, make sure to implement it.
 void *realloc(void *virtual_address, uint32 new_size)
 {
-	//TODO: [PROJECT MS3 - BONUS] [USER HEAP - USER SIDE] realloc
+	//==============================================================
+	//DON'T CHANGE THIS CODE========================================
+	InitializeUHeap();
+	//==============================================================
+	// [USER HEAP - USER SIDE] realloc
 	// Write your code here, remove the panic and write your code
 	panic("realloc() is not implemented yet...!!");
 }
@@ -128,8 +188,18 @@ void *realloc(void *virtual_address, uint32 new_size)
 //=================================
 // FREE SHARED VARIABLE:
 //=================================
+//	This function frees the shared variable at the given virtual_address
+//	To do this, we need to switch to the kernel, free the pages AND "EMPTY" PAGE TABLES
+//	from main memory then switch back to the user again.
+//
+//	use sys_freeSharedObject(...); which switches to the kernel mode,
+//	calls freeSharedObject(...) in "shared_memory_manager.c", then switch back to the user mode here
+//	the freeSharedObject() function is empty, make sure to implement it.
+
 void sfree(void* virtual_address)
 {
+	//TODO: [PROJECT MS3 - BONUS] [SHARING - USER SIDE] sfree()
+
 	// Write your code here, remove the panic and write your code
 	panic("sfree() is not implemented yet...!!");
 }

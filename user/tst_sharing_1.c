@@ -17,14 +17,19 @@ _main(void)
 		}
 		if (fullWS) panic("Please increase the WS size");
 	}
+	/*Dummy malloc to enforce the UHEAP initializations*/
+	malloc(0);
+	/*=================================================*/
 
 	uint32 *x, *y, *z ;
+	uint32 expected ;
 	cprintf("STEP A: checking the creation of shared variables... \n");
 	{
 		int freeFrames = sys_calculate_free_frames() ;
 		x = smalloc("x", PAGE_SIZE, 1);
 		if (x != (uint32*)USER_HEAP_START) panic("Returned address is not correct. check the setting of it and/or the updating of the shared_mem_free_address");
-		if ((freeFrames - sys_calculate_free_frames()) !=  1+1+2) panic("Wrong allocation: make sure that you allocate the required space in the user environment and add its frames to frames_storage");
+		expected = 1+1+2 ;
+		if ((freeFrames - sys_calculate_free_frames()) !=  expected) panic("Wrong allocation (current=%d, expected=%d): make sure that you allocate the required space in the user environment and add its frames to frames_storage", freeFrames - sys_calculate_free_frames(), expected);
 
 		freeFrames = sys_calculate_free_frames() ;
 		z = smalloc("z", PAGE_SIZE + 4, 1);

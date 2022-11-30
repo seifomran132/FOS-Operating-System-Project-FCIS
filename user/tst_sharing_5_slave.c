@@ -17,7 +17,11 @@ _main(void)
 		}
 		if (fullWS) panic("Please increase the WS size");
 	}
+	/*Dummy malloc to enforce the UHEAP initializations*/
+	malloc(0);
+	/*=================================================*/
 
+	int expected;
 	uint32 *x;
 	x = sget(sys_getparentenvid(),"x");
 	int freeFrames = sys_calculate_free_frames() ;
@@ -28,7 +32,8 @@ _main(void)
 	cprintf("Slave env removed x\n");
 
 	int diff = (sys_calculate_free_frames() - freeFrames);
-	if (diff != 1) panic("wrong free: frames removed not equal 1 !, correct frames to be removed is 1:\nfrom the env: 1 table for x\nframes_storage: not cleared yet\n");
+	expected = 1;
+	if (diff != expected) panic("wrong free: frames removed not equal 1 !, correct frames to be removed is 1:\nfrom the env: 1 table for x\nframes_storage: not cleared yet\n");
 
 	//to ensure that this environment is completed successfully
 	inctst();

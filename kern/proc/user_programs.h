@@ -65,7 +65,19 @@ DECLARE_START_OF(tst_buffer_2)
 DECLARE_START_OF(tst_buffer_2_slave)
 DECLARE_START_OF(tst_buffer_3)
 DECLARE_START_OF(tst_quicksort_freeHeap)
+DECLARE_START_OF(tst_semaphore_1master);
+DECLARE_START_OF(tst_semaphore_1slave);
+DECLARE_START_OF(tst_semaphore_2master);
+DECLARE_START_OF(tst_semaphore_2slave);
 
+DECLARE_START_OF(tst_air);
+DECLARE_START_OF(tst_air_clerk);
+DECLARE_START_OF(tst_air_customer);
+
+//2022
+DECLARE_START_OF(tst_malloc_0);
+
+//2015
 DECLARE_START_OF(tst_free_1);
 DECLARE_START_OF(tst_free_2);
 DECLARE_START_OF(tst_free_3);
@@ -103,6 +115,13 @@ DECLARE_START_OF(tst_realloc_3);
 DECLARE_START_OF(tst_freeRAM);
 //DECLARE_START_OF(tst_freeRAM_2);
 DECLARE_START_OF(tst_freeing_stack);
+DECLARE_START_OF(arrayOperations_Master);
+DECLARE_START_OF(arrayOperations_quicksort);
+DECLARE_START_OF(arrayOperations_mergesort);
+DECLARE_START_OF(arrayOperations_stats);
+DECLARE_START_OF(MidTermEx_Master);
+DECLARE_START_OF(MidTermEx_ProcessA);
+DECLARE_START_OF(MidTermEx_ProcessB);
 
 DECLARE_START_OF(ef_fos_fibonacci);
 DECLARE_START_OF(ef_fos_factorial);
@@ -115,6 +134,9 @@ DECLARE_START_OF(ef_tst_sharing_1);
 DECLARE_START_OF(ef_tst_sharing_2master);
 DECLARE_START_OF(ef_tst_sharing_2slave1);
 DECLARE_START_OF(tst_envfree3);
+DECLARE_START_OF(ef_tst_semaphore_1master);
+DECLARE_START_OF(ef_tst_semaphore_1slave);
+DECLARE_START_OF(tst_envfree4);
 DECLARE_START_OF(ef_tst_sharing_4);
 DECLARE_START_OF(tst_envfree5_1);
 DECLARE_START_OF(ef_tst_sharing_4);
@@ -124,6 +146,8 @@ DECLARE_START_OF(ef_tst_sharing_5_slaveB1);
 DECLARE_START_OF(ef_tst_sharing_5_slaveB2);
 DECLARE_START_OF(tst_envfree5_2);
 DECLARE_START_OF(ef_tst_sharing_1);
+DECLARE_START_OF(ef_MidTermEx_Master);
+DECLARE_START_OF(tst_envfree6);
 
 
 #endif /* KERN_USER_PROGRAMS_H_ */

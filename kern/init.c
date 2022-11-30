@@ -41,6 +41,9 @@ void FOS_initialize()
 	// This ensures that all static/global variables start with zero value.
 	memset(start_of_uninitialized_data_section, 0, end_of_kernel - start_of_uninitialized_data_section);
 
+	/*2022*/
+	scheduler_status = SCH_UNINITIALIZED;
+
 	// Initialize the console.
 	// Can't call cprintf until after we do this!
 	console_initialize();
@@ -53,6 +56,10 @@ void FOS_initialize()
 	initialize_kernel_VM();
 	initialize_paging();
 	//	page_check();
+
+	// Lab 3 user environment initialization functions
+	env_init();
+	idt_init();
 
 	//Project initializations
 
@@ -76,9 +83,7 @@ void FOS_initialize()
 	create_shares_array(MAX_SHARES);
 	create_semaphores_array(MAX_SEMAPHORES);
 
-	// Lab 3 user environment initialization functions
-	env_init();
-	idt_init();
+
 
 	enableBuffering(0);
 	enableModifiedBuffer(0) ;
@@ -146,10 +151,20 @@ void _panic(const char *file, int line, const char *fmt,...)
 		//env_run_cmd_prmpt() ;
 	}
 
-	//2015
-	fos_scheduler();
-	//while (1==1)
-	//	run_command_prompt();
+	/*2022*///Check if the scheduler is successfully initialized or not
+	if (scheduler_status != SCH_UNINITIALIZED)
+	{
+		cprintf("scheduler_status=%d\n", scheduler_status);
+		//2015
+		fos_scheduler();
+	}
+	else
+	{
+		curenv = NULL;
+		lcr3(phys_page_directory);
+		while (1)
+			run_command_prompt(NULL);
+	}
 
 }
 
@@ -173,17 +188,27 @@ void _panic_all(const char *file, int line, const char *fmt,...)
 
 	dead:
 	/* break into the fos scheduler */
-
-	//exit all ready env's
-	sched_exit_all_ready_envs();
-	if (curenv != NULL)
+	/*2022*///Check if the scheduler is successfully initialized or not
+	if (scheduler_status != SCH_UNINITIALIZED)
 	{
-		//cprintf("exit curenv...........\n");
-		sched_exit_env(curenv->env_id);
-		//env_run_cmd_prmpt() ;
-	}
+		//exit all ready env's
+		sched_exit_all_ready_envs();
+		if (curenv != NULL)
+		{
+			//cprintf("exit curenv...........\n");
+			sched_exit_env(curenv->env_id);
+			//env_run_cmd_prmpt() ;
+		}
 
-	fos_scheduler();
+		fos_scheduler();
+	}
+	else
+	{
+		curenv = NULL;
+		lcr3(phys_page_directory);
+		while (1)
+			run_command_prompt(NULL);
+	}
 }
 
 
@@ -216,7 +241,11 @@ void _panic_into_prompt(const char *file, int line, const char *fmt,...)
 
 	lcr3(phys_page_directory);
 
-	scheduler_status = SCH_STOPPED;
+	/*2022*///Check if the scheduler is successfully initialized or not
+	if (scheduler_status != SCH_UNINITIALIZED)
+	{
+		scheduler_status = SCH_STOPPED;
+	}
 	while (1)
 		run_command_prompt(NULL);
 }

@@ -224,21 +224,21 @@ inline uint32 env_table_ws_is_entry_empty(struct Env* e, uint32 entry_index)
 
 void cut_paste_WS(struct WorkingSetElement* newWS, int newSize, struct Env* e)
 {
-	//TODO: [PROJECT MS3 - BONUS] [PROGRAM PRIORITY] cut_paste_WS
+	//[PROGRAM PRIORITY] cut_paste_WS
 	//your code is here, remove the panic and write your code
 	panic("cut_paste_WS() is not implemented yet...!!");
 }
 
 void double_WS_Size(struct Env* e, int isOneTimeOnly)
 {
-	//TODO: [PROJECT MS3 - BONUS] [PROGRAM PRIORITY] double_WS_Size
+	//[PROGRAM PRIORITY] double_WS_Size
 	//your code is here, remove the panic and write your code
 	panic("double_WS_Size() is not implemented yet...!!");
 }
 
 void half_WS_Size(struct Env* e, int isImmidiate)
 {
-	//TODO: [PROJECT MS3 - BONUS] [PROGRAM PRIORITY] half_WS_Size
+	//[PROGRAM PRIORITY] half_WS_Size
 	//your code is here, remove the panic and write your code
 	panic("half_WS_Size() is not implemented yet...!!");
 }
