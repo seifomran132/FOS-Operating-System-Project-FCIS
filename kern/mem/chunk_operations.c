@@ -270,6 +270,7 @@ int allocate_chunk(uint32* page_directory, uint32 va, uint32 size, uint32 perms)
 		uint32* destTablePtr = NULL;
 		struct FrameInfo* destFrameInfo = get_frame_info(page_directory, checkerIt, &destTablePtr);
 		if (destFrameInfo != NULL) {
+			cprintf("Address Exists \n");
 			return -1;
 		}
 

@@ -142,11 +142,11 @@ outl(int port, uint32 data)
 	__asm __volatile("outl %0,%w1" : : "a" (data), "d" (port));
 }
 
-static __inline void 
+static __inline void
 invlpg(void *addr)
-{ 
+{
 	__asm __volatile("invlpg (%0)" : : "r" (addr) : "memory");
-}  
+}
 
 static __inline void
 lidt(void *p)
@@ -268,7 +268,7 @@ static __inline void
 cpuid(uint32 info, uint32 *eaxp, uint32 *ebxp, uint32 *ecxp, uint32 *edxp)
 {
 	uint32 eax, ebx, ecx, edx;
-	asm volatile("cpuid" 
+	asm volatile("cpuid"
 		: "=a" (eax), "=b" (ebx), "=c" (ecx), "=d" (edx)
 		: "a" (info));
 	if (eaxp)

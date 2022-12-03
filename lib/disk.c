@@ -81,7 +81,9 @@ int ide_write(uint32 secno, const void *src, uint32 nsecs)
 		}
 		else
 		{
+			cprintf("Before outsl function\n");
 			outsl(0x1F0, src, SECTSIZE/4);
+			cprintf("After outsl function\n");
 			//LOG_STATMENT(cprintf("written %d sectors to disk successfully\n",nsecs););
 		}
 	}
