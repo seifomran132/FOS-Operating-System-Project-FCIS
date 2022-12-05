@@ -57,7 +57,7 @@ void _main(void)
 
 		uint32 freePagesAfter = (sys_calculate_free_frames() + sys_calculate_modified_frames());
 		if( (freePages - freePagesAfter) != 0 )
-			panic("Extra memory are wrongly allocated... It's REplacement: expected that no extra frames are allocated");
+			panic("Extra memory are wrongly allocated... It's REplacement: expected that no extra frames are allocated %d", (freePages - freePagesAfter));
 
 	}
 

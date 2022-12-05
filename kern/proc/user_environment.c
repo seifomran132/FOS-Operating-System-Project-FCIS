@@ -577,8 +577,6 @@ if(ptr_page_WS == NULL)
 	panic("NOT ENOUGH KERNEL HEAP SPACE");
 return ptr_page_WS;
 }
-
-
 //==================================================
 // 5) DYNAMICALLY ALLOCATE SPACE FOR USER DIRECTORY:
 //==================================================

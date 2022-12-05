@@ -8,7 +8,6 @@ void _main(void)
 {
 
 	uint32 kilo = 1024;
-
 //	cprintf("envID = %d\n",envID);
 
 	/// testing illegal memory access
