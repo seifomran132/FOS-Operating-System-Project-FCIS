@@ -23,6 +23,7 @@ _main(void)
 	sys_waitSemaphore(envID, "depend1") ;
 	sys_waitSemaphore(envID, "depend1") ;
 	sys_waitSemaphore(envID, "depend1") ;
+	cprintf("SEMAPHORES\n");
 
 	int sem1val = sys_getSemaphoreValue(envID, "cs1");
 	int sem2val = sys_getSemaphoreValue(envID, "depend1");

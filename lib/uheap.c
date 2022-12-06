@@ -30,13 +30,43 @@ void initialize_dyn_block_system()
 {
 	//TODO: [PROJECT MS3] [USER HEAP - USER SIDE] initialize_dyn_block_system
 	// your code is here, remove the panic and write your code
-	panic("initialize_dyn_block_system() is not implemented yet...!!");
+	//panic("initialize_dyn_block_system() is not implemented yet...!!");
 
 	//[1] Initialize two lists (AllocMemBlocksList & FreeMemBlocksList) [Hint: use LIST_INIT()]
+	LIST_INIT(&AllocMemBlocksList);
+	LIST_INIT(&FreeMemBlocksList);
+
+
 	//[2] Dynamically allocate the array of MemBlockNodes at VA USER_DYN_BLKS_ARRAY
 	//	  (remember to set MAX_MEM_BLOCK_CNT with the chosen size of the array)
+
+	//Set MAX_MEM_BLOCK_CNT
+	uint32 heapSize = (USER_HEAP_MAX - USER_HEAP_START);
+	uint32 numOfElements = (heapSize / PAGE_SIZE);
+	MAX_MEM_BLOCK_CNT = numOfElements;
+
+	//Allocation of MemBlockNodes
+	uint32 tmp = USER_DYN_BLKS_ARRAY;
+	struct MemBlock* initial_block_node = (struct MemBlock*)tmp;
+	MemBlockNodes = initial_block_node;
+
+	uint32 totalSizeRequired = numOfElements * sizeof(struct MemBlock);
+	sys_allocate_chunk(KERNEL_HEAP_START, totalSizeRequired, (PERM_PRESENT | PERM_WRITEABLE));
+
+
 	//[3] Initialize AvailableMemBlocksList by filling it with the MemBlockNodes
+
+	initialize_MemBlocksList(MAX_MEM_BLOCK_CNT);
+
 	//[4] Insert a new MemBlock with the heap size into the FreeMemBlocksList
+	struct MemBlock* allocatedForFree = LIST_FIRST(&AvailableMemBlocksList);
+	LIST_REMOVE(&AvailableMemBlocksList, allocatedForFree);
+	//The Block which will be inserted in Free list
+	uint32 restedSize = (USER_HEAP_MAX - USER_HEAP_START);
+	allocatedForFree->size = restedSize;
+	allocatedForFree->sva = USER_HEAP_START;
+	//MBNEND = USER_HEAP_START + totalSizeRequired;
+	insert_sorted_with_merge_freeList(allocatedForFree);
 }
 
 //=================================
@@ -54,7 +84,8 @@ void* malloc(uint32 size)
 
 	//TODO: [PROJECT MS3] [USER HEAP - USER SIDE] malloc
 	// your code is here, remove the panic and write your code
-	panic("malloc() is not implemented yet...!!");
+	//panic("malloc() is not implemented yet...!!");
+
 
 	// Steps:
 	//	1) Implement FF strategy to search the heap for suitable space
@@ -63,6 +94,20 @@ void* malloc(uint32 size)
 	// 	3) Return pointer containing the virtual address of allocated space,
 	//
 	//Use sys_isUHeapPlacementStrategyFIRSTFIT()... to check the current strategy
+
+	uint32 roundedSize = ROUNDUP(size, PAGE_SIZE);
+	struct MemBlock* allocatedBlock;
+	if (sys_isUHeapPlacementStrategyFIRSTFIT()) {
+		allocatedBlock = alloc_block_FF(roundedSize);
+		if (allocatedBlock == NULL) {
+			return NULL;
+		}
+	}
+
+	insert_sorted_allocList(allocatedBlock);
+
+	return (void*)allocatedBlock->sva;
+
 }
 
 //=================================

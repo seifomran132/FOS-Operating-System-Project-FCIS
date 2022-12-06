@@ -434,6 +434,11 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 	//1. Free ALL pages of the given range from the Page File
 	//2. Free ONLY pages that are resident in the working set from the memory
 	//3. Removes ONLY the empty page tables (i.e. not used) (no pages are mapped in the table)
+
+
+
+
+
 }
 
 //=====================================

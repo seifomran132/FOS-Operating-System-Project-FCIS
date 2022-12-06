@@ -87,6 +87,11 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 
 	if(currSize < maxSize) {
 		// Placement
+
+		cprintf("Placement @%x\n", ROUNDDOWN(fault_va, PAGE_SIZE));
+
+		//env_page_ws_print(curenv);
+
 		uint32 *pageTablePtr = NULL;
 		struct FrameInfo *allocatedFrame = get_frame_info(curenv->env_page_directory, fault_va, &pageTablePtr);;
 		allocate_frame(&allocatedFrame);
@@ -95,7 +100,16 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 		int pfr = pf_read_env_page(curenv, ((void *) fault_va));
 		if(pfr == E_PAGE_NOT_EXIST_IN_PF){
 
-			if((fault_va > USER_HEAP_START && fault_va < USER_HEAP_MAX) || (fault_va < USTACKTOP && fault_va > USTACKBOTTOM)) {
+//			Conditions
+//			(fault_va > USER_HEAP_START && fault_va < USER_HEAP_MAX) ||
+//			(fault_va < USTACKTOP && fault_va > USTACKBOTTOM) ||
+//			(fault_va > KERNEL_HEAP_START && fault_va < KERNEL_HEAP_MAX) ||
+//			(fault_va < UTEXT && fault_va > USER_HEAP_START)
+
+			if(
+					fault_va < USTACKTOP && fault_va > UTEXT
+			)
+			{
 				// DO NOTHING
 
 			}
@@ -124,6 +138,8 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 	else {
 		// Replacement
 		uint32 victimVA = 0;
+
+		cprintf("Replacement\n");
 
 		while(1 == 1) {
 			uint32 pageAddress = env_page_ws_get_virtual_address(curenv, curenv->page_last_WS_index);
