@@ -85,10 +85,11 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 	uint32 currSize = env_page_ws_get_size(curenv);
 	uint32 maxSize = curenv->page_WS_max_size;
 
+	env_page_ws_print(curenv);
+
 	if(currSize < maxSize) {
 		// Placement
-
-		cprintf("Placement @%x\n", ROUNDDOWN(fault_va, PAGE_SIZE));
+		cprintf("Placement @%x \n", fault_va);
 
 		//env_page_ws_print(curenv);
 
@@ -107,7 +108,8 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 //			(fault_va < UTEXT && fault_va > USER_HEAP_START)
 
 			if(
-					fault_va < USTACKTOP && fault_va > UTEXT
+					(fault_va >= 2145382400 && fault_va <= 2684354560) ||
+					(fault_va >= USTACKBOTTOM && fault_va <= USTACKTOP)
 			)
 			{
 				// DO NOTHING

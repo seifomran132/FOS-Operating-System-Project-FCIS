@@ -270,7 +270,6 @@ int allocate_chunk(uint32* page_directory, uint32 va, uint32 size, uint32 perms)
 		uint32* destTablePtr = NULL;
 		struct FrameInfo* destFrameInfo = get_frame_info(page_directory, checkerIt, &destTablePtr);
 		if (destFrameInfo != NULL) {
-			cprintf("Address Exists \n");
 			return -1;
 		}
 
@@ -435,7 +434,19 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 	//2. Free ONLY pages that are resident in the working set from the memory
 	//3. Removes ONLY the empty page tables (i.e. not used) (no pages are mapped in the table)
 
+	uint32 roundedEnd = ROUNDUP((virtual_address + size), PAGE_SIZE);
 
+	uint32 startIterator = virtual_address;
+	while(startIterator < roundedEnd) {
+		pf_remove_env_page(e, startIterator);
+		startIterator += PAGE_SIZE;
+	}
+
+	uint32 startIterator2 = virtual_address;
+	while(startIterator2 < roundedEnd) {
+		pf_remove_env_page(e, startIterator);
+		startIterator += PAGE_SIZE;
+	}
 
 
 

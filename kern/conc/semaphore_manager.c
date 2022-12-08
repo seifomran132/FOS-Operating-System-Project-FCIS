@@ -156,13 +156,18 @@ int createSemaphore(int32 ownerEnvID, char* semaphoreName, uint32 initialValue)
 
 	int isSemExist = get_semaphore_object_ID(ownerEnvID, semaphoreName);
 	if(isSemExist == E_SEMAPHORE_NOT_EXISTS) {
-		struct Semaphore *mySemaphore = NULL;
-		strcpy(mySemaphore->name, semaphoreName);
+		struct Semaphore *mySemaphore = 0;
+
+		for(int i = 0; i < 64; i++) {
+			mySemaphore->name[i] = semaphoreName[i];
+		}
+
 		mySemaphore->ownerID = ownerEnvID;
 		mySemaphore->value = 1;
 
 		int semres = allocate_semaphore_object(&mySemaphore);
 
+		cprintf("Sem id %s\n", mySemaphore->value);
 		if(semres == E_NO_SEMAPHORE) {
 			return E_NO_SEMAPHORE;
 		}
@@ -198,16 +203,18 @@ void waitSemaphore(int32 ownerEnvID, char* semaphoreName)
 	//	4) Call "fos_scheduler()" to continue running the remaining envs
 
 	int semID = get_semaphore_object_ID(ownerEnvID, semaphoreName);
-	struct Semaphore mySemaphore = semaphores[semID];
+	if(semID != E_SEMAPHORE_NOT_EXISTS) {
+		struct Semaphore mySemaphore = semaphores[semID];
+		cprintf("ID %d\n", semID);
 
-	mySemaphore.value--;
-	if(mySemaphore.value < 0) {
-		enqueue(&mySemaphore.env_queue, curenv);
-		curenv->env_status = ENV_BLOCKED;
-		curenv = NULL;
+		mySemaphore.value--;
+		if(mySemaphore.value < 0) {
+			enqueue(&mySemaphore.env_queue, curenv);
+			curenv->env_status = ENV_BLOCKED;
+		}
+		fos_scheduler();
+		cprintf("From Wait\n");
 	}
-	fos_scheduler();
-	cprintf("From Wait\n");
 }
 
 //==============

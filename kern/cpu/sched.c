@@ -164,7 +164,7 @@ fos_scheduler(void)
 		lcr3(phys_page_directory);
 
 		//cprintf("SP = %x\n", read_esp());
-
+		cprintf("Scheduler\n");
 		scheduler_status = SCH_STOPPED;
 		//cprintf("[sched] no envs - nothing more to do!\n");
 		while (1)
