@@ -85,7 +85,7 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 	uint32 currSize = env_page_ws_get_size(curenv);
 	uint32 maxSize = curenv->page_WS_max_size;
 
-	env_page_ws_print(curenv);
+	//env_page_ws_print(curenv);
 
 	if(currSize < maxSize) {
 		// Placement
@@ -101,14 +101,9 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 		int pfr = pf_read_env_page(curenv, ((void *) fault_va));
 		if(pfr == E_PAGE_NOT_EXIST_IN_PF){
 
-//			Conditions
-//			(fault_va > USER_HEAP_START && fault_va < USER_HEAP_MAX) ||
-//			(fault_va < USTACKTOP && fault_va > USTACKBOTTOM) ||
-//			(fault_va > KERNEL_HEAP_START && fault_va < KERNEL_HEAP_MAX) ||
-//			(fault_va < UTEXT && fault_va > USER_HEAP_START)
 
 			if(
-					(fault_va >= 2145382400 && fault_va <= 2684354560) ||
+					(fault_va >= USER_HEAP_START && fault_va <= USER_HEAP_MAX) ||
 					(fault_va >= USTACKBOTTOM && fault_va <= USTACKTOP)
 			)
 			{

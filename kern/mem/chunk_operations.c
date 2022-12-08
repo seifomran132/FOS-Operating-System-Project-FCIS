@@ -427,7 +427,7 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 {
 	//TODO: [PROJECT MS3] [USER HEAP - KERNEL SIDE] free_user_mem
 	// Write your code here, remove the panic and write your code
-	panic("free_user_mem() is not implemented yet...!!");
+	//panic("free_user_mem() is not implemented yet...!!");
 
 	//This function should:
 	//1. Free ALL pages of the given range from the Page File
@@ -442,10 +442,26 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 		startIterator += PAGE_SIZE;
 	}
 
-	uint32 startIterator2 = virtual_address;
-	while(startIterator2 < roundedEnd) {
-		pf_remove_env_page(e, startIterator);
-		startIterator += PAGE_SIZE;
+	uint32 wsAddrIt = virtual_address;
+	while(wsAddrIt < roundedEnd) {
+
+		int i;
+		for(i = 0; i < e->page_WS_max_size; i++) {
+			int wspva = env_page_ws_get_virtual_address(e, i);
+			if(wspva == ROUNDDOWN(wsAddrIt, PAGE_SIZE)) {
+				//env_page_ws_print(e);
+				env_page_ws_clear_entry(e, i);
+				cprintf("Freed %x\n", wspva);
+
+				break;
+			}
+		}
+
+		// Unmapping
+		unmap_frame(e->env_page_directory, wsAddrIt);
+
+		wsAddrIt += PAGE_SIZE;
+
 	}
 
 

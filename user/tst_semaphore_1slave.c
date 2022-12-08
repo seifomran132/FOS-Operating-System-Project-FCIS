@@ -14,7 +14,7 @@ _main(void)
 		cprintf("my ID is %d\n", id);
 		int sem1val = sys_getSemaphoreValue(parentenvID, "cs1");
 		if (sem1val > 0)
-			panic("Error: more than 1 process inside the CS... please review your semaphore code again...");
+			panic("Error: more than 1 process inside the CS... please review your semaphore code again... %d", sem1val);
 		env_sleep(1000) ;
 	sys_signalSemaphore(parentenvID, "cs1") ;
 

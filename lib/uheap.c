@@ -41,17 +41,17 @@ void initialize_dyn_block_system()
 	//	  (remember to set MAX_MEM_BLOCK_CNT with the chosen size of the array)
 
 	//Set MAX_MEM_BLOCK_CNT
-	uint32 heapSize = (USER_HEAP_MAX - USER_HEAP_START);
+	uint32 heapSize = ROUNDDOWN((USER_HEAP_MAX - USER_HEAP_START), PAGE_SIZE);
 	uint32 numOfElements = (heapSize / PAGE_SIZE);
 	MAX_MEM_BLOCK_CNT = numOfElements;
 
 	//Allocation of MemBlockNodes
 	uint32 tmp = USER_DYN_BLKS_ARRAY;
-	struct MemBlock* initial_block_node = (struct MemBlock*)tmp;
+	struct MemBlock* initial_block_node = (struct MemBlock*)USER_DYN_BLKS_ARRAY;
 	MemBlockNodes = initial_block_node;
 
 	uint32 totalSizeRequired = numOfElements * sizeof(struct MemBlock);
-	sys_allocate_chunk(KERNEL_HEAP_START, totalSizeRequired, (PERM_PRESENT | PERM_WRITEABLE));
+	sys_allocate_chunk(USER_DYN_BLKS_ARRAY, totalSizeRequired, (PERM_PRESENT | PERM_WRITEABLE | PERM_USER));
 
 
 	//[3] Initialize AvailableMemBlocksList by filling it with the MemBlockNodes
@@ -126,11 +126,25 @@ void free(void* virtual_address)
 {
 	//TODO: [PROJECT MS3] [USER HEAP - USER SIDE] free
 	// your code is here, remove the panic and write your code
-	panic("free() is not implemented yet...!!");
+	//panic("free() is not implemented yet...!!");
 
 	//you should get the size of the given allocation using its address
 	//you need to call sys_free_user_mem()
 	//refer to the project presentation and documentation for details
+
+	uint32 blockAddress = (uint32)virtual_address;
+	struct MemBlock* wantedBlock = find_block(&AllocMemBlocksList, blockAddress);
+
+	if(wantedBlock != NULL){
+		uint32 blockEnd = wantedBlock->sva + wantedBlock->size;
+		uint32 startingAddress = wantedBlock->sva;
+
+
+		LIST_REMOVE(&AllocMemBlocksList, wantedBlock);
+		insert_sorted_with_merge_freeList(wantedBlock);
+
+		sys_free_user_mem(blockAddress, wantedBlock->size);
+	}
 }
 
 
