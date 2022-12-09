@@ -435,34 +435,74 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 	//3. Removes ONLY the empty page tables (i.e. not used) (no pages are mapped in the table)
 
 	uint32 roundedEnd = ROUNDUP((virtual_address + size), PAGE_SIZE);
+		cprintf("Free @%x\n", virtual_address);
 
+	// Deleting pages from PF
 	uint32 startIterator = virtual_address;
 	while(startIterator < roundedEnd) {
+		//cprintf("Freeing pages @%x\n", startIterator);
 		pf_remove_env_page(e, startIterator);
 		startIterator += PAGE_SIZE;
 	}
 
+	// Freeing frames that exist in WS
 	uint32 wsAddrIt = virtual_address;
 	while(wsAddrIt < roundedEnd) {
-
+		//cprintf("Freeing Ws @%x\n", virtual_address);
 		int i;
 		for(i = 0; i < e->page_WS_max_size; i++) {
 			int wspva = env_page_ws_get_virtual_address(e, i);
 			if(wspva == ROUNDDOWN(wsAddrIt, PAGE_SIZE)) {
 				//env_page_ws_print(e);
 				env_page_ws_clear_entry(e, i);
-				cprintf("Freed %x\n", wspva);
-
+				//kfree(&wsAddrIt);
+				//cprintf("Free WS %x\n", wspva);
+				// Unmapping
+				cprintf("Unmapping @%x\n", wsAddrIt);
+				unmap_frame(e->env_page_directory, wsAddrIt);
 				break;
 			}
 		}
 
-		// Unmapping
-		unmap_frame(e->env_page_directory, wsAddrIt);
+
+
 
 		wsAddrIt += PAGE_SIZE;
 
 	}
+
+	// Freeing Page Table
+
+	uint32 pgIterator = virtual_address;
+	while (pgIterator < roundedEnd) {
+		uint32 *pageTable = NULL;
+		uint32 pageTableRes = get_page_table(e->env_page_directory, pgIterator, &pageTable);
+		if(pageTable != NULL) {
+			//cprintf("Freeing page table @%x\n", pgIterator);
+			int emptyTable = 1;
+
+			// Check all entries are empty
+			for(int i = 0; i < 1024; i++) {
+				if(pageTable[i] != 0) {
+					emptyTable = 0;
+					//cprintf("Entry Exist %d\n", i+1);
+					break;
+				}
+
+			}
+
+			if(emptyTable == 1) {
+				kfree(pageTable);
+				e->env_page_directory[PDX(wsAddrIt)] = 0;
+				cprintf("Empty Table\n");
+			}
+
+		}
+
+		pgIterator+= PAGE_SIZE;
+	}
+
+
 
 
 

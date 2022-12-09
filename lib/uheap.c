@@ -95,6 +95,7 @@ void* malloc(uint32 size)
 	//
 	//Use sys_isUHeapPlacementStrategyFIRSTFIT()... to check the current strategy
 
+
 	uint32 roundedSize = ROUNDUP(size, PAGE_SIZE);
 	struct MemBlock* allocatedBlock;
 	if (sys_isUHeapPlacementStrategyFIRSTFIT()) {
@@ -105,7 +106,7 @@ void* malloc(uint32 size)
 	}
 
 	insert_sorted_allocList(allocatedBlock);
-
+	cprintf("Alloc @%x Size %d\n",allocatedBlock->sva, size);
 	return (void*)allocatedBlock->sva;
 
 }
@@ -140,10 +141,10 @@ void free(void* virtual_address)
 		uint32 startingAddress = wantedBlock->sva;
 
 
+		cprintf("Block Size: %d\n", wantedBlock->size);
+		sys_free_user_mem(blockAddress, wantedBlock->size);
 		LIST_REMOVE(&AllocMemBlocksList, wantedBlock);
 		insert_sorted_with_merge_freeList(wantedBlock);
-
-		sys_free_user_mem(blockAddress, wantedBlock->size);
 	}
 }
 
