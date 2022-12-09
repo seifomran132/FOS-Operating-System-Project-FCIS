@@ -162,7 +162,7 @@ void* smalloc(char *sharedVarName, uint32 size, uint8 isWritable)
 
 	//TODO: [PROJECT MS3] [SHARING - USER SIDE] smalloc()
 	// Write your code here, remove the panic and write your code
-	panic("smalloc() is not implemented yet...!!");
+	//panic("smalloc() is not implemented yet...!!");
 	// Steps:
 	//	1) Implement FIRST FIT strategy to search the heap for suitable space
 	//		to the required allocation size (space should be on 4 KB BOUNDARY)
@@ -177,6 +177,28 @@ void* smalloc(char *sharedVarName, uint32 size, uint8 isWritable)
 	// ******** ON 4KB BOUNDARY ******************* //
 
 	//Use sys_isUHeapPlacementStrategyFIRSTFIT() to check the current strategy
+
+	uint32 roundedSize = ROUNDUP(size, PAGE_SIZE);
+	struct MemBlock* allocatedBlock;
+	if (sys_isUHeapPlacementStrategyFIRSTFIT()) {
+		allocatedBlock = alloc_block_FF(roundedSize);
+		if (allocatedBlock == NULL) {
+			return NULL;
+		}
+	}
+
+	insert_sorted_allocList(allocatedBlock);
+
+	int createRes = sys_createSharedObject(sharedVarName, size, isWritable, (void*)allocatedBlock->sva);
+
+	if(createRes >= 0) {
+
+		return (void*)allocatedBlock->sva;
+	}
+	else {
+		return NULL;
+	}
+
 }
 
 //========================================

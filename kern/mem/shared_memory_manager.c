@@ -269,9 +269,40 @@ int createSharedObject(int32 ownerID, char* shareName, uint32 size, uint8 isWrit
 {
 	//TODO: [PROJECT MS3] [SHARING - KERNEL SIDE] createSharedObject()
 	// your code is here, remove the panic and write your code
-	panic("createSharedObject() is not implemented yet...!!");
+	//panic("createSharedObject() is not implemented yet...!!");
 
 	struct Env* myenv = curenv; //The calling environment
+
+	int sharedObjID = get_share_object_ID(ownerID,shareName);
+
+	if(sharedObjID == E_SHARED_MEM_NOT_EXISTS) {
+
+		struct Share *myShare = NULL;
+
+		int ShareID = allocate_share_object(&myShare);
+		allocate_chunk(myenv->env_page_directory,(uint32)virtual_address,size, PERM_PRESENT | PERM_WRITEABLE | PERM_USER);
+		if(ShareID == E_NO_SHARE) {
+			return E_NO_SHARE;
+		}
+		uint32 *pageTablePtr = NULL;
+		struct FrameInfo *allocatedFrame = get_frame_info(myenv->env_page_directory,(uint32) virtual_address, &pageTablePtr);;
+		allocate_frame(&allocatedFrame);
+		map_frame(curenv->env_page_directory, allocatedFrame, (uint32)virtual_address, PERM_WRITEABLE | PERM_USER);
+		myShare->ownerID = ownerID;
+		strcpy(myShare->name, shareName);
+		//myShare->name = shareName;
+		myShare->size = size;
+		myShare->references = 1;
+		add_frame_to_storage(myShare->framesStorage, allocatedFrame, ShareID);
+		return ShareID;
+	}
+	else {
+		return E_SHARED_MEM_EXISTS;
+	}
+
+
+
+
 
 	// This function should create the shared object at the given virtual address with the given size
 	// and return the ShareObjectID
@@ -279,6 +310,7 @@ int createSharedObject(int32 ownerID, char* shareName, uint32 size, uint8 isWrit
 	//	a) ShareObjectID (its index in "shares" array) if success
 	//	b) E_SHARED_MEM_EXISTS if the shared object already exists
 	//	c) E_NO_SHARE if the number of shared objects reaches max "MAX_SHARES"
+
 }
 
 //======================
