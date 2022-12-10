@@ -169,9 +169,10 @@ int createSemaphore(int32 ownerEnvID, char* semaphoreName, uint32 initialValue)
 		mySemaphore->value = initialValue;
 		mySemaphore->ownerID = ownerEnvID;
 
-		for(int i = 0; i < strlen(semaphoreName); i++) {
-			mySemaphore->name[i] = semaphoreName[i];
-		}
+		strcpy(mySemaphore->name, semaphoreName);
+//		for(int i = 0; i < strlen(semaphoreName); i++) {
+//			mySemaphore->name[i] = semaphoreName[i];
+//		}
 
 		if(semres == E_NO_SEMAPHORE) {
 			return E_NO_SEMAPHORE;
@@ -213,13 +214,13 @@ void waitSemaphore(int32 ownerEnvID, char* semaphoreName)
 		struct Semaphore mySemaphore = semaphores[semID];
 		//cprintf("Name %s\n", mySemaphore.name);
 
-		mySemaphore.value--;
+		semaphores[semID].value--;
 		//cprintf("Value %d\n", mySemaphore.value);
-		if(mySemaphore.value < 0) {
+		if(semaphores[semID].value < 0) {
 			//cprintf("Blocking Semaphore\n");
-			enqueue(&mySemaphore.env_queue, myenv);
+			enqueue(&semaphores[semID].env_queue, myenv);
 			myenv->env_status = ENV_BLOCKED;
-			//curenv = NULL;
+			curenv = NULL;
 		}
 		//cprintf("End Wait\n");
 	}
@@ -235,7 +236,7 @@ void signalSemaphore(int ownerEnvID, char* semaphoreName)
 	// your code is here, remove the panic and write your code
 	//panic("signalSemaphore() is not implemented yet...!!");
 
-	cprintf("Signal Func\n");
+	//cprintf("Signal Func\n");
 	// Steps:
 	//	1) Get the Semaphore
 	//	2) Increment its value
@@ -246,13 +247,13 @@ void signalSemaphore(int ownerEnvID, char* semaphoreName)
 	int semID = get_semaphore_object_ID(ownerEnvID, semaphoreName);
 	struct Semaphore mySemaphore = semaphores[semID];
 
-	mySemaphore.value++;
-	cprintf("Sem %s value = %d\n", mySemaphore.name, mySemaphore.value);
-	if(mySemaphore.value <= 0) {
-		dequeue(&mySemaphore.env_queue);
-		sched_insert_ready(curenv);
+	semaphores[semID].value++;
+	//cprintf("Sem %s value = %d\n", semaphores[semID].name, semaphores[semID].value);
+	if(semaphores[semID].value <= 0) {
+		struct Env* dequeued = dequeue(&(semaphores[semID].env_queue));
+		sched_insert_ready(dequeued);
 		//enqueue(&mySemaphore.env_queue, curenv);
-		curenv->env_status = ENV_READY;
+		dequeued->env_status = ENV_READY;
 
 	}
 

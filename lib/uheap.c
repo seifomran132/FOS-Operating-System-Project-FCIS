@@ -213,23 +213,54 @@ void* sget(int32 ownerEnvID, char *sharedVarName)
 
 	//TODO: [PROJECT MS3] [SHARING - USER SIDE] sget()
 	// Write your code here, remove the panic and write your code
-	panic("sget() is not implemented yet...!!");
+	// panic("sget() is not implemented yet...!!");
 
 	// Steps:
 	//	1) Get the size of the shared variable (use sys_getSizeOfSharedObject())
 	//	2) If not exists, return NULL
 	//	3) Implement FIRST FIT strategy to search the heap for suitable space
 	//		to share the variable (should be on 4 KB BOUNDARY)
-	//	4) if no suitable space found, return NULL
-	//	 Else,
-	//	5) Call sys_getSharedObject(...) to invoke the Kernel for sharing this variable
-	//		sys_getSharedObject(): if succeed, it returns the ID of the shared variable. Else, it returns -ve
-	//	6) If the Kernel successfully share the variable, return its virtual address
-	//	   Else, return NULL
-	//
+		//4) if no suitable space found, return NULL
+		 //Else,
+		//5) Call sys_getSharedObject(...) to invoke the Kernel for sharing this variable
+			//sys_getSharedObject(): if succeed, it returns the ID of the shared variable. Else, it returns -ve
+		//6) If the Kernel successfully share the variable, return its virtual address
+		  // Else, return NULL
+
+
+
+	struct MemBlock* ptrVa;
+	ptrVa=NULL;
+
+	int sharedSize = sys_getSizeOfSharedObject(ownerEnvID,sharedVarName);
+	cprintf("out of getsize seccussfly");
+
+
+	if (sharedSize == E_SHARED_MEM_NOT_EXISTS){
+		    return NULL;
+	}
+
+	if (sys_isUHeapPlacementStrategyFIRSTFIT()) {
+		ptrVa = alloc_block_FF(ROUNDUP(sharedSize, PAGE_SIZE));
+		if (ptrVa == NULL) {
+			return NULL;
+		}
+	}
+	int sharedIndex = sys_getSharedObject(ownerEnvID,sharedVarName,ptrVa);
+	if(sharedIndex==E_SHARED_MEM_NOT_EXISTS){
+		return NULL;
+	}
+
+
+
+	cprintf("out of getsharedobject seccussfly");
+
+
+
+	return  ptrVa;
 
 	//This function should find the space for sharing the variable
-	// ******** ON 4KB BOUNDARY ******************* //
+	// *** ON 4KB BOUNDARY ******** //
 
 	//Use sys_isUHeapPlacementStrategyFIRSTFIT() to check the current strategy
 }

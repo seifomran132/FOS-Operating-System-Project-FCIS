@@ -459,7 +459,11 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 				//cprintf("Free WS %x\n", wspva);
 				// Unmapping
 				cprintf("Unmapping @%x\n", wsAddrIt);
-				unmap_frame(e->env_page_directory, wsAddrIt);
+				unmap_frame(e->env_page_directory, ROUNDDOWN(wsAddrIt, PAGE_SIZE));
+				uint32 *ptptr = NULL;
+				get_page_table(e->env_page_directory, wsAddrIt, &ptptr);
+
+				cprintf("pt @%x = %d\n", wsAddrIt, ptptr == NULL);
 				break;
 			}
 		}
@@ -493,6 +497,7 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 
 			if(emptyTable == 1) {
 				kfree(pageTable);
+				//unmap_frame(e->env_page_directory, *pageTable);
 				e->env_page_directory[PDX(wsAddrIt)] = 0;
 				cprintf("Empty Table\n");
 			}

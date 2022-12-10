@@ -23,11 +23,11 @@ _main(void)
 	sys_waitSemaphore(envID, "depend1") ;
 	sys_waitSemaphore(envID, "depend1") ;
 	sys_waitSemaphore(envID, "depend1") ;
-	cprintf("SEMAPHORES\n");
+	//cprintf("SEMAPHORES\n");
 
 	int sem1val = sys_getSemaphoreValue(envID, "cs1");
 	int sem2val = sys_getSemaphoreValue(envID, "depend1");
-	cprintf("1: %d \t2: %d \n", sem1val, sem2val);
+	//cprintf("1: %d \t2: %d \n", sem1val, sem2val);
 	if (sem2val == 0 && sem1val == 1)
 		cprintf("Congratulations!! Test of Semaphores [1] completed successfully!!\n\n\n");
 	else
