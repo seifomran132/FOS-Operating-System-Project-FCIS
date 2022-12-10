@@ -280,7 +280,7 @@ int createSharedObject(int32 ownerID, char* shareName, uint32 size, uint8 isWrit
 		struct Share *myShare = NULL;
 
 		int ShareID = allocate_share_object(&myShare);
-		allocate_chunk(myenv->env_page_directory,(uint32)virtual_address,size, PERM_PRESENT | PERM_WRITEABLE | PERM_USER);
+		allocate_chunk(myenv->env_page_directory,(uint32)virtual_address,size, PERM_WRITEABLE | PERM_USER);
 		if(ShareID == E_NO_SHARE) {
 			return E_NO_SHARE;
 		}
@@ -293,14 +293,16 @@ int createSharedObject(int32 ownerID, char* shareName, uint32 size, uint8 isWrit
 		strcpy(myShare->name, shareName);
 		myShare->size = size;
 		myShare->references = 1;
+		myShare->isWritable = isWritable;
 
 		uint32 iter = ROUNDDOWN((uint32)virtual_address, PAGE_SIZE);
 		uint32 roundedSize = ROUNDUP((uint32)virtual_address + size, PAGE_SIZE);
+		int i = 0;
 		while(iter < roundedSize) {
 			uint32 *pageTablePtr = NULL;
 			struct FrameInfo *allocatedFrame = get_frame_info(myenv->env_page_directory,(uint32) iter, &pageTablePtr);
-			add_frame_to_storage(myShare->framesStorage, allocatedFrame, ShareID);
-
+			add_frame_to_storage(myShare->framesStorage, allocatedFrame, i);
+			i++;
 			iter += PAGE_SIZE;
 		}
 
@@ -341,37 +343,60 @@ int getSharedObject(int32 ownerID, char* shareName, void* virtual_address)
 	struct Env* myenv = curenv; //The calling environment
 
 
-	struct Share* reqSobj;
-	struct FrameInfo * exactFrm;
-
 	int ind = get_share_object_ID(ownerID ,shareName);
-	cprintf("out of get shared object ID seccussfly");
-
-	reqSobj=NULL;
 
 
-	for (int i=0 ;i<1024;i++){
-		exactFrm =get_frame_from_storage(shares[ind].framesStorage,i);
-		exactFrm->environment=curenv;
-		exactFrm->va=strtol(virtual_address++,NULL,10);
-		reqSobj->framesStorage[i]=exactFrm->va;
-
-		cprintf("in the loop in loop 1024");
-		//	reqSobj->framesStorage[i]= get_frame_from_storage(shares[ind].framesStorage,i);
+	int mapres = 0;
+	uint32 startingaddr = ROUNDDOWN((uint32)virtual_address, PAGE_SIZE);
+	uint32 myPerms = PERM_PRESENT | PERM_USER;
+	if(shares[ind].isWritable == 1) {
+		myPerms = PERM_PRESENT | PERM_WRITEABLE | PERM_USER;
 	}
-	if(shares[ind].isWritable==0){
-		reqSobj->isWritable=0;
-	}
-	else{
-		reqSobj->isWritable=1;
-	}
+	for (int i = 0; i < 1024; i++) {
 
-	if (reqSobj!=NULL){
-		shares[ind].references++;
+		struct FrameInfo *myFrame = get_frame_from_storage(shares[ind].framesStorage,i);
+		if(myFrame != NULL) {
+
+			mapres = map_frame(myenv->env_page_directory, myFrame, startingaddr, myPerms);
+			shares[ind].references++;
+			//cprintf("PERMS %d\n", myPerms);
+			startingaddr += PAGE_SIZE;
+		}
+
+	}
+	if(mapres == 0) {
 		return ind;
 	}
+	else {
+		return E_SHARED_MEM_NOT_EXISTS;
+	}
 
-	return E_SHARED_MEM_NOT_EXISTS;
+
+//	reqSobj=NULL;
+//
+//
+//	for (int i=0 ;i<1024;i++){
+//		exactFrm =get_frame_from_storage(shares[ind].framesStorage,i);
+//		exactFrm->environment=curenv;
+//		exactFrm->va=strtol(virtual_address++,NULL,10);
+//		reqSobj->framesStorage[i]=exactFrm->va;
+//
+//		cprintf("in the loop in loop 1024");
+//		//	reqSobj->framesStorage[i]= get_frame_from_storage(shares[ind].framesStorage,i);
+//	}
+//	if(shares[ind].isWritable==0){
+//		reqSobj->isWritable=0;
+//	}
+//	else{
+//		reqSobj->isWritable=1;
+//	}
+//
+//	if (reqSobj!=NULL){
+//		shares[ind].references++;
+//		return ind;
+//	}
+
+
 }
 
 //==================================================================================//

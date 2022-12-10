@@ -232,32 +232,32 @@ void* sget(int32 ownerEnvID, char *sharedVarName)
 	struct MemBlock* ptrVa;
 	ptrVa=NULL;
 
-	int sharedSize = sys_getSizeOfSharedObject(ownerEnvID,sharedVarName);
-	cprintf("out of getsize seccussfly");
-
+	uint32 sharedSize = sys_getSizeOfSharedObject(ownerEnvID,sharedVarName);
+	uint32 roundedSize = ROUNDUP(sharedSize, PAGE_SIZE);
 
 	if (sharedSize == E_SHARED_MEM_NOT_EXISTS){
 		    return NULL;
 	}
 
 	if (sys_isUHeapPlacementStrategyFIRSTFIT()) {
-		ptrVa = alloc_block_FF(ROUNDUP(sharedSize, PAGE_SIZE));
+		ptrVa = alloc_block_FF(roundedSize);
+		cprintf("FF at @%x\n", ptrVa->sva);
 		if (ptrVa == NULL) {
 			return NULL;
 		}
 	}
-	int sharedIndex = sys_getSharedObject(ownerEnvID,sharedVarName,ptrVa);
+	int sharedIndex = sys_getSharedObject(ownerEnvID,sharedVarName, (void *)ptrVa->sva);
 	if(sharedIndex==E_SHARED_MEM_NOT_EXISTS){
 		return NULL;
 	}
 
 
 
-	cprintf("out of getsharedobject seccussfly");
+	cprintf("Out @%x\n", ptrVa->sva);
 
 
 
-	return  ptrVa;
+	return (void *)ptrVa->sva;
 
 	//This function should find the space for sharing the variable
 	// *** ON 4KB BOUNDARY ******** //
