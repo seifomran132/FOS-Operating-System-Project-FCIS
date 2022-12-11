@@ -139,10 +139,8 @@ void free(void* virtual_address)
 	if(wantedBlock != NULL){
 		uint32 blockEnd = wantedBlock->sva + wantedBlock->size;
 		uint32 startingAddress = wantedBlock->sva;
-
-
 		LIST_REMOVE(&AllocMemBlocksList, wantedBlock);
-		sys_free_user_mem(blockAddress, wantedBlock->size);
+		sys_free_user_mem(ROUNDDOWN(wantedBlock->sva,PAGE_SIZE), wantedBlock->size);
 		insert_sorted_with_merge_freeList(wantedBlock);
 		cprintf("Out: %d\n", wantedBlock->size);
 	}
