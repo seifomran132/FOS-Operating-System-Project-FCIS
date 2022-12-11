@@ -456,15 +456,15 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 				env_page_ws_clear_entry(e, i);
 				uint32 *ptptr = NULL;
 				int success = get_page_table(e->env_page_directory, wsAddrIt, &ptptr);
-				cprintf("pt @ %x = %d\n", wsAddrIt, ptptr == NULL);
-				cprintf(" page table return %d \n",success);
+				//cprintf("pt @ %x = %d\n", wsAddrIt, ptptr == NULL);
+				//cprintf(" page table return %d \n",success);
 				if(ptptr != NULL) {
 					uint32 pa = virtual_to_physical(e->env_page_directory, ROUNDDOWN(wsAddrIt, PAGE_SIZE));
 					struct FrameInfo *adframe = to_frame_info(pa);
 					adframe->references = 0;
 					free_frame(adframe);
 				}
-				cprintf("Unmapping working set @ %x\n", wsAddrIt);
+				//cprintf("Unmapping working set @ %x\n", wsAddrIt);
 				unmap_frame(e->env_page_directory, ROUNDDOWN(wsAddrIt, PAGE_SIZE));
 				break;
 			}
@@ -493,7 +493,7 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 				unmap_frame(e->env_page_directory, (uint32)pageTable);
 				e->env_page_directory[PDX(pgIterator)] = 0;
 				prevTable = pageTable;
-				cprintf("Empty Table ya gd3aaaan\n");
+				//cprintf("Empty Table ya gd3aaaan\n");
 			}
 		}
 		pgIterator+= PAGE_SIZE;

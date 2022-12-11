@@ -128,15 +128,22 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 		}
 		if(found == 0) {
 
-			env_page_ws_set_entry(curenv, curenv->page_last_WS_index, fault_va);
-			curenv->page_last_WS_index = (curenv->page_last_WS_index + 1) % curenv->page_WS_max_size;
+			cprintf("Placement HERE\n");
+			for (int i = 0; i < curenv->page_WS_max_size; i++) {
+				uint32 isEmpty = env_page_ws_is_entry_empty(curenv, i);
+				if(isEmpty == 1) {
+					env_page_ws_set_entry(curenv, i, fault_va);
+					curenv->page_last_WS_index = (i + 1) % curenv->page_WS_max_size;
+					break;
+				}
+			}
 		}
 	}
 	else {
 		// Replacement
 		uint32 victimVA = 0;
 
-		cprintf("Replacement\n");
+		cprintf("Replacement @%x\n", ROUNDDOWN(fault_va, PAGE_SIZE));
 
 		while(1 == 1) {
 			uint32 pageAddress = env_page_ws_get_virtual_address(curenv, curenv->page_last_WS_index);
