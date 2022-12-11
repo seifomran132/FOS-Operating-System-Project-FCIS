@@ -132,19 +132,19 @@ void free(void* virtual_address)
 	//you should get the size of the given allocation using its address
 	//you need to call sys_free_user_mem()
 	//refer to the project presentation and documentation for details
-
 	uint32 blockAddress = (uint32)virtual_address;
 	struct MemBlock* wantedBlock = find_block(&AllocMemBlocksList, blockAddress);
+	cprintf("Enter: %d\n", wantedBlock->size);
 
 	if(wantedBlock != NULL){
 		uint32 blockEnd = wantedBlock->sva + wantedBlock->size;
 		uint32 startingAddress = wantedBlock->sva;
 
 
-		cprintf("Block Size: %d\n", wantedBlock->size);
-		sys_free_user_mem(blockAddress, wantedBlock->size);
 		LIST_REMOVE(&AllocMemBlocksList, wantedBlock);
+		sys_free_user_mem(blockAddress, wantedBlock->size);
 		insert_sorted_with_merge_freeList(wantedBlock);
+		cprintf("Out: %d\n", wantedBlock->size);
 	}
 }
 

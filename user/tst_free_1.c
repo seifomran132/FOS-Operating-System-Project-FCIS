@@ -228,6 +228,7 @@ void _main(void)
 		usedDiskPages = sys_pf_calculate_allocated_pages() ;
 		free(ptr_allocations[1]);
 		if ((usedDiskPages - sys_pf_calculate_allocated_pages()) != 0) panic("Wrong free: Extra or less pages are removed from PageFile");
+		cprintf("hello from test\n");
 		if ((sys_calculate_free_frames() - freeFrames) != 2 + 1) panic("Wrong free: WS pages in memory and/or page tables are not freed correctly %d", (sys_calculate_free_frames() - freeFrames));
 		for (var = 0; var < (myEnv->page_WS_max_size); ++var)
 		{

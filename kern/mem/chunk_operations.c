@@ -455,15 +455,22 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 			if(wspva == ROUNDDOWN(wsAddrIt, PAGE_SIZE)) {
 				//env_page_ws_print(e);
 				env_page_ws_clear_entry(e, i);
-				//kfree(&wsAddrIt);
+				//kfree((void *)ROUNDDOWN(wsAddrIt, PAGE_SIZE));
 				//cprintf("Free WS %x\n", wspva);
 				// Unmapping
-				cprintf("Unmapping @%x\n", wsAddrIt);
-				unmap_frame(e->env_page_directory, ROUNDDOWN(wsAddrIt, PAGE_SIZE));
 				uint32 *ptptr = NULL;
 				get_page_table(e->env_page_directory, wsAddrIt, &ptptr);
-
 				cprintf("pt @%x = %d\n", wsAddrIt, ptptr == NULL);
+				if(ptptr == NULL) {
+					uint32 pa = virtual_to_physical(e->env_page_directory, ROUNDDOWN(wsAddrIt, PAGE_SIZE));
+					struct FrameInfo *adframe = to_frame_info(pa);
+					adframe->references = 0;
+					free_frame(adframe);
+
+				}
+
+				cprintf("Unmapping @%x\n", wsAddrIt);
+				unmap_frame(e->env_page_directory, ROUNDDOWN(wsAddrIt, PAGE_SIZE));
 				break;
 			}
 		}
@@ -478,12 +485,14 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 	// Freeing Page Table
 
 	uint32 pgIterator = virtual_address;
+		uint32 *prevTable = NULL;
 	while (pgIterator < roundedEnd) {
 		uint32 *pageTable = NULL;
 		uint32 pageTableRes = get_page_table(e->env_page_directory, pgIterator, &pageTable);
-		if(pageTable != NULL) {
+		if(pageTable != NULL && pageTable != prevTable) {
 			//cprintf("Freeing page table @%x\n", pgIterator);
 			int emptyTable = 1;
+		//cprintf("Free Page Table %x\n", pageTable);
 
 			// Check all entries are empty
 			for(int i = 0; i < 1024; i++) {
@@ -496,9 +505,14 @@ void free_user_mem(struct Env* e, uint32 virtual_address, uint32 size)
 			}
 
 			if(emptyTable == 1) {
-				kfree(pageTable);
-				//unmap_frame(e->env_page_directory, *pageTable);
+				//kfree(pageTable);
+				//uint32 tablepa = virtual_to_physical(e->env_page_directory, (uint32)pageTable);
+				//struct FrameInfo *ptframe = to_frame_info(tablepa);
+				//ptframe->references = 0;
+				//free_frame(ptframe);
+				unmap_frame(e->env_page_directory, (uint32)pageTable);
 				e->env_page_directory[PDX(wsAddrIt)] = 0;
+				prevTable = pageTable;
 				cprintf("Empty Table\n");
 			}
 
