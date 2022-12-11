@@ -301,6 +301,7 @@ int createSharedObject(int32 ownerID, char* shareName, uint32 size, uint8 isWrit
 		while(iter < roundedSize) {
 			uint32 *pageTablePtr = NULL;
 			struct FrameInfo *allocatedFrame = get_frame_info(myenv->env_page_directory,(uint32) iter, &pageTablePtr);
+			allocatedFrame->va = iter;
 			add_frame_to_storage(myShare->framesStorage, allocatedFrame, i);
 			i++;
 			iter += PAGE_SIZE;
@@ -359,7 +360,7 @@ int getSharedObject(int32 ownerID, char* shareName, void* virtual_address)
 
 			mapres = map_frame(myenv->env_page_directory, myFrame, startingaddr, myPerms);
 			shares[ind].references++;
-			//cprintf("PERMS %d\n", myPerms);
+			cprintf("va %d\n", myFrame->va);
 			startingaddr += PAGE_SIZE;
 		}
 
