@@ -284,6 +284,20 @@ void sfree(void* virtual_address)
 
 	// Write your code here, remove the panic and write your code
 	panic("sfree() is not implemented yet...!!");
+	uint32 blockAdress= (uint32)virtual_address;
+	struct MemBlock * wantedBlock=find_block(&AllocMemBlocksList,blockAdress);
+	int envId=sys_getenvid();
+
+	if(wantedBlock != NULL){
+			uint32 blockEnd = wantedBlock->sva + wantedBlock->size;
+			uint32 startingAddress = wantedBlock->sva;
+			//int objectID=sys_getSharedObject((int32)envId,envName,virtual_address);
+			//cprintf(" id is %d",objectID);
+			//sys_freeSharedObject(,virtual_address);
+			LIST_REMOVE(&AllocMemBlocksList, wantedBlock);
+			insert_sorted_with_merge_freeList(wantedBlock);
+		}
+
 }
 
 
