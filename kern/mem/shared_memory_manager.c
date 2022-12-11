@@ -280,20 +280,32 @@ int createSharedObject(int32 ownerID, char* shareName, uint32 size, uint8 isWrit
 		struct Share *myShare = NULL;
 
 		int ShareID = allocate_share_object(&myShare);
-		allocate_chunk(myenv->env_page_directory,(uint32)virtual_address,size, PERM_PRESENT | PERM_WRITEABLE | PERM_USER);
+		allocate_chunk(myenv->env_page_directory,(uint32)virtual_address,size, PERM_WRITEABLE | PERM_USER);
 		if(ShareID == E_NO_SHARE) {
 			return E_NO_SHARE;
 		}
-		uint32 *pageTablePtr = NULL;
-		struct FrameInfo *allocatedFrame = get_frame_info(myenv->env_page_directory,(uint32) virtual_address, &pageTablePtr);;
-		allocate_frame(&allocatedFrame);
-		map_frame(curenv->env_page_directory, allocatedFrame, (uint32)virtual_address, PERM_WRITEABLE | PERM_USER);
+
+		//allocate_frame(&allocatedFrame);
+		//map_frame(curenv->env_page_directory, allocatedFrame, (uint32)virtual_address, PERM_WRITEABLE | PERM_USER);
+
+		// Initialize
 		myShare->ownerID = ownerID;
 		strcpy(myShare->name, shareName);
-		//myShare->name = shareName;
 		myShare->size = size;
 		myShare->references = 1;
-		add_frame_to_storage(myShare->framesStorage, allocatedFrame, ShareID);
+		myShare->isWritable = isWritable;
+
+		uint32 iter = ROUNDDOWN((uint32)virtual_address, PAGE_SIZE);
+		uint32 roundedSize = ROUNDUP((uint32)virtual_address + size, PAGE_SIZE);
+		int i = 0;
+		while(iter < roundedSize) {
+			uint32 *pageTablePtr = NULL;
+			struct FrameInfo *allocatedFrame = get_frame_info(myenv->env_page_directory,(uint32) iter, &pageTablePtr);
+			add_frame_to_storage(myShare->framesStorage, allocatedFrame, i);
+			i++;
+			iter += PAGE_SIZE;
+		}
+
 		return ShareID;
 	}
 	else {
@@ -320,16 +332,71 @@ int getSharedObject(int32 ownerID, char* shareName, void* virtual_address)
 {
 	//TODO: [PROJECT MS3] [SHARING - KERNEL SIDE] getSharedObject()
 	// your code is here, remove the panic and write your code
-	panic("getSharedObject() is not implemented yet...!!");
+	//panic("getSharedObject() is not implemented yet...!!");
 
+		// 	This function should share the required object in the heap of the current environment
+		//	starting from the given virtual_address with the specified permissions of the object: read_only/writable
+		// 	and return the ShareObjectID
+		// RETURN:
+		//	a) sharedObjectID (its index in the array) if success
+		//	b) E_SHARED_MEM_NOT_EXISTS if the shared object is not exists
 	struct Env* myenv = curenv; //The calling environment
 
-	// 	This function should share the required object in the heap of the current environment
-	//	starting from the given virtual_address with the specified permissions of the object: read_only/writable
-	// 	and return the ShareObjectID
-	// RETURN:
-	//	a) sharedObjectID (its index in the array) if success
-	//	b) E_SHARED_MEM_NOT_EXISTS if the shared object is not exists
+
+	int ind = get_share_object_ID(ownerID ,shareName);
+
+
+	int mapres = 0;
+	uint32 startingaddr = ROUNDDOWN((uint32)virtual_address, PAGE_SIZE);
+	uint32 myPerms = PERM_PRESENT | PERM_USER;
+	if(shares[ind].isWritable == 1) {
+		myPerms = PERM_PRESENT | PERM_WRITEABLE | PERM_USER;
+	}
+	for (int i = 0; i < 1024; i++) {
+
+		struct FrameInfo *myFrame = get_frame_from_storage(shares[ind].framesStorage,i);
+		if(myFrame != NULL) {
+
+			mapres = map_frame(myenv->env_page_directory, myFrame, startingaddr, myPerms);
+			shares[ind].references++;
+			//cprintf("PERMS %d\n", myPerms);
+			startingaddr += PAGE_SIZE;
+		}
+
+	}
+	if(mapres == 0) {
+		return ind;
+	}
+	else {
+		return E_SHARED_MEM_NOT_EXISTS;
+	}
+
+
+//	reqSobj=NULL;
+//
+//
+//	for (int i=0 ;i<1024;i++){
+//		exactFrm =get_frame_from_storage(shares[ind].framesStorage,i);
+//		exactFrm->environment=curenv;
+//		exactFrm->va=strtol(virtual_address++,NULL,10);
+//		reqSobj->framesStorage[i]=exactFrm->va;
+//
+//		cprintf("in the loop in loop 1024");
+//		//	reqSobj->framesStorage[i]= get_frame_from_storage(shares[ind].framesStorage,i);
+//	}
+//	if(shares[ind].isWritable==0){
+//		reqSobj->isWritable=0;
+//	}
+//	else{
+//		reqSobj->isWritable=1;
+//	}
+//
+//	if (reqSobj!=NULL){
+//		shares[ind].references++;
+//		return ind;
+//	}
+
+
 }
 
 //==================================================================================//

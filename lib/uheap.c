@@ -132,19 +132,19 @@ void free(void* virtual_address)
 	//you should get the size of the given allocation using its address
 	//you need to call sys_free_user_mem()
 	//refer to the project presentation and documentation for details
-
 	uint32 blockAddress = (uint32)virtual_address;
 	struct MemBlock* wantedBlock = find_block(&AllocMemBlocksList, blockAddress);
+	cprintf("Enter: %d\n", wantedBlock->size);
 
 	if(wantedBlock != NULL){
 		uint32 blockEnd = wantedBlock->sva + wantedBlock->size;
 		uint32 startingAddress = wantedBlock->sva;
 
 
-		cprintf("Block Size: %d\n", wantedBlock->size);
-		sys_free_user_mem(blockAddress, wantedBlock->size);
 		LIST_REMOVE(&AllocMemBlocksList, wantedBlock);
+		sys_free_user_mem(blockAddress, wantedBlock->size);
 		insert_sorted_with_merge_freeList(wantedBlock);
+		cprintf("Out: %d\n", wantedBlock->size);
 	}
 }
 
@@ -213,23 +213,54 @@ void* sget(int32 ownerEnvID, char *sharedVarName)
 
 	//TODO: [PROJECT MS3] [SHARING - USER SIDE] sget()
 	// Write your code here, remove the panic and write your code
-	panic("sget() is not implemented yet...!!");
+	// panic("sget() is not implemented yet...!!");
 
 	// Steps:
 	//	1) Get the size of the shared variable (use sys_getSizeOfSharedObject())
 	//	2) If not exists, return NULL
 	//	3) Implement FIRST FIT strategy to search the heap for suitable space
 	//		to share the variable (should be on 4 KB BOUNDARY)
-	//	4) if no suitable space found, return NULL
-	//	 Else,
-	//	5) Call sys_getSharedObject(...) to invoke the Kernel for sharing this variable
-	//		sys_getSharedObject(): if succeed, it returns the ID of the shared variable. Else, it returns -ve
-	//	6) If the Kernel successfully share the variable, return its virtual address
-	//	   Else, return NULL
-	//
+		//4) if no suitable space found, return NULL
+		 //Else,
+		//5) Call sys_getSharedObject(...) to invoke the Kernel for sharing this variable
+			//sys_getSharedObject(): if succeed, it returns the ID of the shared variable. Else, it returns -ve
+		//6) If the Kernel successfully share the variable, return its virtual address
+		  // Else, return NULL
+
+
+
+	struct MemBlock* ptrVa;
+	ptrVa=NULL;
+
+	uint32 sharedSize = sys_getSizeOfSharedObject(ownerEnvID,sharedVarName);
+	uint32 roundedSize = ROUNDUP(sharedSize, PAGE_SIZE);
+
+	if (sharedSize == E_SHARED_MEM_NOT_EXISTS){
+		    return NULL;
+	}
+
+	if (sys_isUHeapPlacementStrategyFIRSTFIT()) {
+		ptrVa = alloc_block_FF(roundedSize);
+		cprintf("FF at @%x\n", ptrVa->sva);
+		if (ptrVa == NULL) {
+			return NULL;
+		}
+	}
+	int sharedIndex = sys_getSharedObject(ownerEnvID,sharedVarName, (void *)ptrVa->sva);
+	if(sharedIndex==E_SHARED_MEM_NOT_EXISTS){
+		return NULL;
+	}
+
+
+
+	cprintf("Out @%x\n", ptrVa->sva);
+
+
+
+	return (void *)ptrVa->sva;
 
 	//This function should find the space for sharing the variable
-	// ******** ON 4KB BOUNDARY ******************* //
+	// *** ON 4KB BOUNDARY ******** //
 
 	//Use sys_isUHeapPlacementStrategyFIRSTFIT() to check the current strategy
 }
