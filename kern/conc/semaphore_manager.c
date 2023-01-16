@@ -158,21 +158,12 @@ int createSemaphore(int32 ownerEnvID, char* semaphoreName, uint32 initialValue)
 	int isSemExist = get_semaphore_object_ID(ownerEnvID, semaphoreName);
 	if(isSemExist == E_SEMAPHORE_NOT_EXISTS) {
 		struct Semaphore *mySemaphore = NULL;
-
-
-
-
-		//struct Semaphore * semPtr = &mySemaphore;
 		int semres = allocate_semaphore_object(&mySemaphore);
-		//cprintf("Allocate %d\n", semres);
 
 		mySemaphore->value = initialValue;
 		mySemaphore->ownerID = ownerEnvID;
 
 		strcpy(mySemaphore->name, semaphoreName);
-//		for(int i = 0; i < strlen(semaphoreName); i++) {
-//			mySemaphore->name[i] = semaphoreName[i];
-//		}
 
 		if(semres == E_NO_SEMAPHORE) {
 			return E_NO_SEMAPHORE;
@@ -209,20 +200,14 @@ void waitSemaphore(int32 ownerEnvID, char* semaphoreName)
 	//	4) Call "fos_scheduler()" to continue running the remaining envs
 
 	int semID = get_semaphore_object_ID(ownerEnvID, semaphoreName);
-	//cprintf("wait test %d\n", semID);
 	if(semID != E_SEMAPHORE_NOT_EXISTS) {
 		struct Semaphore mySemaphore = semaphores[semID];
-		//cprintf("Name %s\n", mySemaphore.name);
-
 		semaphores[semID].value--;
-		//cprintf("Value %d\n", mySemaphore.value);
 		if(semaphores[semID].value < 0) {
-			//cprintf("Blocking Semaphore\n");
 			enqueue(&semaphores[semID].env_queue, myenv);
 			myenv->env_status = ENV_BLOCKED;
 			curenv = NULL;
 		}
-		//cprintf("End Wait\n");
 	}
 	fos_scheduler();
 }
@@ -236,7 +221,6 @@ void signalSemaphore(int ownerEnvID, char* semaphoreName)
 	// your code is here, remove the panic and write your code
 	//panic("signalSemaphore() is not implemented yet...!!");
 
-	//cprintf("Signal Func\n");
 	// Steps:
 	//	1) Get the Semaphore
 	//	2) Increment its value
@@ -248,11 +232,9 @@ void signalSemaphore(int ownerEnvID, char* semaphoreName)
 	struct Semaphore mySemaphore = semaphores[semID];
 
 	semaphores[semID].value++;
-	//cprintf("Sem %s value = %d\n", semaphores[semID].name, semaphores[semID].value);
 	if(semaphores[semID].value <= 0) {
 		struct Env* dequeued = dequeue(&(semaphores[semID].env_queue));
 		sched_insert_ready(dequeued);
-		//enqueue(&mySemaphore.env_queue, curenv);
 		dequeued->env_status = ENV_READY;
 
 	}

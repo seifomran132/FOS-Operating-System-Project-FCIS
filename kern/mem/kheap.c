@@ -137,7 +137,6 @@ void kfree(void* virtual_address)
 			uint32* framePT = NULL;
 			struct FrameInfo* frameToFree = get_frame_info(ptr_page_directory, startingAddress, &framePT);
 			unmap_frame(ptr_page_directory, startingAddress);
-			cprintf("Free @%x\n", startingAddress);
 			startingAddress += PAGE_SIZE;
 		}
 

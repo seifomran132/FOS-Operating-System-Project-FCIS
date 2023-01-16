@@ -106,7 +106,6 @@ void* malloc(uint32 size)
 	}
 
 	insert_sorted_allocList(allocatedBlock);
-	cprintf("Alloc @%x Size %d\n",allocatedBlock->sva, size);
 	return (void*)allocatedBlock->sva;
 
 }
@@ -134,7 +133,6 @@ void free(void* virtual_address)
 	//refer to the project presentation and documentation for details
 	uint32 blockAddress = (uint32)virtual_address;
 	struct MemBlock* wantedBlock = find_block(&AllocMemBlocksList, blockAddress);
-	cprintf("Enter: %d\n", wantedBlock->size);
 
 	if(wantedBlock != NULL){
 		uint32 blockEnd = wantedBlock->sva + wantedBlock->size;
@@ -142,7 +140,6 @@ void free(void* virtual_address)
 		LIST_REMOVE(&AllocMemBlocksList, wantedBlock);
 		sys_free_user_mem(ROUNDDOWN(wantedBlock->sva,PAGE_SIZE), wantedBlock->size);
 		insert_sorted_with_merge_freeList(wantedBlock);
-		cprintf("Out: %d\n", wantedBlock->size);
 	}
 }
 
@@ -239,7 +236,6 @@ void* sget(int32 ownerEnvID, char *sharedVarName)
 
 	if (sys_isUHeapPlacementStrategyFIRSTFIT()) {
 		ptrVa = alloc_block_FF(roundedSize);
-		cprintf("FF at @%x\n", ptrVa->sva);
 		if (ptrVa == NULL) {
 			return NULL;
 		}
@@ -248,10 +244,6 @@ void* sget(int32 ownerEnvID, char *sharedVarName)
 	if(sharedIndex==E_SHARED_MEM_NOT_EXISTS){
 		return NULL;
 	}
-
-
-
-	cprintf("Out @%x\n", ptrVa->sva);
 
 
 
@@ -321,7 +313,6 @@ void sfree(void* virtual_address)
 			uint32 blockEnd = wantedBlock->sva + wantedBlock->size;
 			uint32 startingAddress = wantedBlock->sva;
 			//int objectID=sys_getSharedObject((int32)envId,envName,virtual_address);
-			//cprintf(" id is %d",objectID);
 			//sys_freeSharedObject(,virtual_address);
 			LIST_REMOVE(&AllocMemBlocksList, wantedBlock);
 			insert_sorted_with_merge_freeList(wantedBlock);

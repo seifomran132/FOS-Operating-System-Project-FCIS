@@ -85,14 +85,8 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 	uint32 currSize = env_page_ws_get_size(curenv);
 	uint32 maxSize = curenv->page_WS_max_size;
 
-	//env_page_ws_print(curenv);
-
 	if(currSize < maxSize) {
 		// Placement
-		cprintf("Placement @%x \n", fault_va);
-
-		//env_page_ws_print(curenv);
-
 		uint32 *pageTablePtr = NULL;
 		struct FrameInfo *allocatedFrame = get_frame_info(curenv->env_page_directory, fault_va, &pageTablePtr);;
 		allocate_frame(&allocatedFrame);
@@ -111,7 +105,7 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 
 			}
 			else {
-				panic("ILLEGAL MEMORY ACCESS");
+				panic("ILLEGAL MEMORY ACCESS for @%x", fault_va);
 			}
 
 		}
@@ -127,8 +121,6 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 			}
 		}
 		if(found == 0) {
-
-			cprintf("Placement HERE\n");
 			for (int i = 0; i < curenv->page_WS_max_size; i++) {
 				uint32 isEmpty = env_page_ws_is_entry_empty(curenv, i);
 				if(isEmpty == 1) {
@@ -142,9 +134,6 @@ void page_fault_handler(struct Env * curenv, uint32 fault_va)
 	else {
 		// Replacement
 		uint32 victimVA = 0;
-
-		cprintf("Replacement @%x\n", ROUNDDOWN(fault_va, PAGE_SIZE));
-
 		while(1 == 1) {
 			uint32 pageAddress = env_page_ws_get_virtual_address(curenv, curenv->page_last_WS_index);
 			int isUsed = (pt_get_page_permissions(curenv->env_page_directory, pageAddress) & PERM_USED) ? 1 : 0;

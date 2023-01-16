@@ -119,10 +119,8 @@ int get_share_object_ID(int32 ownerID, char* name)
 		if (shares[i].empty)
 			continue;
 
-		//cprintf("shared var name = %s compared with %s\n", name, shares[i].name);
 		if(shares[i].ownerID == ownerID && strcmp(name, shares[i].name)==0)
 		{
-			//cprintf("%s found\n", name);
 			return i;
 		}
 	}
@@ -360,7 +358,6 @@ int getSharedObject(int32 ownerID, char* shareName, void* virtual_address)
 
 			mapres = map_frame(myenv->env_page_directory, myFrame, startingaddr, myPerms);
 			shares[ind].references++;
-			cprintf("va %d\n", myFrame->va);
 			startingaddr += PAGE_SIZE;
 		}
 
@@ -371,31 +368,6 @@ int getSharedObject(int32 ownerID, char* shareName, void* virtual_address)
 	else {
 		return E_SHARED_MEM_NOT_EXISTS;
 	}
-
-
-//	reqSobj=NULL;
-//
-//
-//	for (int i=0 ;i<1024;i++){
-//		exactFrm =get_frame_from_storage(shares[ind].framesStorage,i);
-//		exactFrm->environment=curenv;
-//		exactFrm->va=strtol(virtual_address++,NULL,10);
-//		reqSobj->framesStorage[i]=exactFrm->va;
-//
-//		cprintf("in the loop in loop 1024");
-//		//	reqSobj->framesStorage[i]= get_frame_from_storage(shares[ind].framesStorage,i);
-//	}
-//	if(shares[ind].isWritable==0){
-//		reqSobj->isWritable=0;
-//	}
-//	else{
-//		reqSobj->isWritable=1;
-//	}
-//
-//	if (reqSobj!=NULL){
-//		shares[ind].references++;
-//		return ind;
-//	}
 
 
 }
