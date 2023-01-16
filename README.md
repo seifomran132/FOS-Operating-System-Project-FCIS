@@ -58,6 +58,6 @@ Milestone functions
 ## Contributions
 
 1- (Seif Omran)[https://github.com/seifomran132]<br />
-2- (Seif Omran)[https://github.com/Lord-Biko-1]<br />
-3- (Seif Omran)[https://github.com/seifezz]<br />
-4- (Seif Omran)[https://github.com/Seifhegab]<br />
+2- (Seif Samer)[https://github.com/Lord-Biko-1]<br />
+3- (Seif Ezz)[https://github.com/seifezz]<br />
+4- (Seif Wael)[https://github.com/Seifhegab]<br />
