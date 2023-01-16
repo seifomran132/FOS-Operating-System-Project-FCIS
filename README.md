@@ -7,24 +7,24 @@ In this project, we build the main and essential modules in Operating System bas
 
 In milestone 1 we built a dynamic allocator to dynamically allocate blocks in memory using different strategies
 
-Milestone functions
-1- Initialize Memblocknodes
-2- Find Memblock
-3- Insert in ALOC List
-4- Allocating blocks using First Fit Strategy
-5- Allocating blocks using Best Fit Strategy
-6- Allocating blocks using Next Fit Strategy
-7- Insert Block in Free List
-8- Autocomplete for the command line
+Milestone functions<br />
+1- Initialize Memblocknodes<br />
+2- Find Memblock<br />
+3- Insert in ALOC List<br />
+4- Allocating blocks using First Fit Strategy<br />
+5- Allocating blocks using Best Fit Strategy<br />
+6- Allocating blocks using Next Fit Strategy<br />
+7- Insert Block in Free List<br />
+8- Autocomplete for the command line<br />
 
 ### Milestone 2
 
 In Milestone 2 we built essential Paging functions, Kernal Heap functions, Chunk Operations Functions
 
 Milestone functions
-9- Allocate Chunk in RAM
-10- Copy Chunk from one place to another
-11- Cut chunk from one place to another
+9- Allocate Chunk in RAM<br />
+10- Copy Chunk from one place to another<br />
+11- Cut chunk from one place to another<br />
 12- Share chunk
 13- Calculate the required frames for a chunk
 14- Calculate allocated frames
